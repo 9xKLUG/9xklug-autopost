@@ -1,0 +1,13 @@
+Nur ein Code passt. Welcher?
+
+Welcher 4-stellige Code öffnet das Schloss? Jede Ziffer kommt nur einmal vor.
+7935: Zwei Ziffern stimmen, stehen aber falsch.
+7421: Zwei Ziffern stimmen, stehen aber falsch.
+8102: Eine Ziffer stimmt, steht aber falsch.
+6203: Eine Ziffer stimmt, steht aber falsch.
+6259: Keine Ziffer stimmt.
+4389: Drei Ziffern stimmen, eine davon steht richtig.
+
+Schreib deinen Code in die Kommentare, bevor du weiterwischst. Auflösung und Lösungsweg findest du auf den letzten Slides.
+
+#9xKLUG #Zahlenschloss #Logikrätsel #Denksport #Gehirnjogging

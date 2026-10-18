@@ -1,0 +1,7 @@
+Wo liegen die Minen?
+
+In den Feldern ohne Zahl sind genau 5 Minen versteckt. Jede Zahl zeigt, wie viele Minen in den 8 Feldern rundherum liegen. Raten hilft nicht, alles lässt sich logisch herleiten.
+
+Schreib die Felder in die Kommentare, zum Beispiel A1, C4, bevor du weiterwischst. Auflösung und Lösungsweg findest du auf den letzten Slides.
+
+#9xKLUG #Minensuche #Logikrätsel #Denksport #Gehirnjogging

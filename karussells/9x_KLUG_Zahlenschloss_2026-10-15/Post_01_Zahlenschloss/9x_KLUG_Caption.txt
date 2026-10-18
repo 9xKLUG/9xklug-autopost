@@ -1,0 +1,12 @@
+Knackst du den Code?
+
+Welcher 3-stellige Code öffnet das Schloss? Jede Ziffer kommt nur einmal vor.
+173: Eine Ziffer stimmt, steht aber falsch.
+028: Eine Ziffer stimmt und steht richtig.
+634: Eine Ziffer stimmt, steht aber falsch.
+184: Eine Ziffer stimmt, steht aber falsch.
+643: Eine Ziffer stimmt und steht richtig.
+
+Schreib deinen Code in die Kommentare, bevor du weiterwischst. Auflösung und Lösungsweg findest du auf den letzten Slides.
+
+#9xKLUG #Zahlenschloss #Logikrätsel #Denksport #Gehirnjogging

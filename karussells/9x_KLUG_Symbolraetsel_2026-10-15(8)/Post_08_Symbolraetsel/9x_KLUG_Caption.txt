@@ -1,0 +1,13 @@
+Kopfrechnen mit Symbolen.
+
+Jedes Symbol steht für eine Zahl:
+□ + □ + □ = 33
+□ + ▲ + ▲ = 29
+▲ + ● + ● = 21
+● + ▲ + □ = ?
+
+Zum Aufwärmen: Erst die Symbole knacken, dann zusammenrechnen.
+
+Schreib deine Lösung in die Kommentare, bevor du weiterwischst. Auflösung und Rechenweg findest du auf den letzten Slides.
+
+#9xKLUG #Rechenrätsel #Matherätsel #Denksport #Gehirnjogging

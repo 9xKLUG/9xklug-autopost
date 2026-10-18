@@ -1,0 +1,11 @@
+Löst du es ohne Stift?
+
+Jeder Stein ist die Summe der beiden Steine darunter. Welche Zahl steht ganz oben?
+?
+_ | 19
+_ | _ | _
+10 | _ | 3 | 6
+
+Schreib deine Zahl in die Kommentare, bevor du weiterwischst. Auflösung und Rechenweg findest du auf den letzten Slides.
+
+#9xKLUG #Zahlenmauer #Kopfrechnen #Denksport #Gehirnjogging

@@ -1,0 +1,11 @@
+Nur für Leute, die gern um die Ecke denken.
+
+Jeder Stein ist die Summe der beiden Steine darunter. Welche Zahl steht ganz oben?
+?
+_ | _
+_ | 21 | _
+8 | 10 | _ | 12
+
+Schreib deine Zahl in die Kommentare, bevor du weiterwischst. Auflösung und Rechenweg findest du auf den letzten Slides.
+
+#9xKLUG #Zahlenmauer #Kopfrechnen #Denksport #Gehirnjogging

@@ -1,0 +1,7 @@
+Jede Zahl nur einmal.
+
+In jeder Zeile und jeder Spalte steht jede Zahl von 1 bis 4 genau einmal. Die Zeichen < und > gelten zwischen zwei Nachbarfeldern. Welche Zahl gehört ins orange Feld?
+
+Schreib deine Zahl in die Kommentare, bevor du weiterwischst. Auflösung und Lösungsweg findest du auf den letzten Slides.
+
+#9xKLUG #Logikrätsel #Futoshiki #Denksport #Gehirnjogging

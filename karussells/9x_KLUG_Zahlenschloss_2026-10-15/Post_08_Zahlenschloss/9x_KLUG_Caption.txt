@@ -1,0 +1,13 @@
+Kaffee an, Kopf an.
+
+Welcher 4-stellige Code öffnet das Schloss? Jede Ziffer kommt nur einmal vor.
+1650: Zwei Ziffern stimmen, stehen aber falsch.
+6480: Zwei Ziffern stimmen, stehen aber falsch.
+8651: Eine Ziffer stimmt, steht aber falsch.
+4327: Zwei Ziffern stimmen, eine davon steht richtig.
+2139: Eine Ziffer stimmt und steht richtig.
+7381: Zwei Ziffern stimmen, stehen aber falsch.
+
+Schreib deinen Code in die Kommentare, bevor du weiterwischst. Auflösung und Lösungsweg findest du auf den letzten Slides.
+
+#9xKLUG #Zahlenschloss #Logikrätsel #Denksport #Gehirnjogging

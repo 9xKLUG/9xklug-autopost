@@ -1,0 +1,11 @@
+Schaffst du es ohne Taschenrechner?
+
+Jeder Stein ist die Summe der beiden Steine darunter. Welche Zahl steht ganz oben?
+?
+33 | _
+_ | _ | 13
+_ | 8 | _ | 7
+
+Schreib deine Zahl in die Kommentare, bevor du weiterwischst. Auflösung und Rechenweg findest du auf den letzten Slides.
+
+#9xKLUG #Zahlenmauer #Kopfrechnen #Denksport #Gehirnjogging

@@ -1,0 +1,12 @@
+Kaffee an, Kopf an.
+
+Welcher 3-stellige Code öffnet das Schloss? Jede Ziffer kommt nur einmal vor.
+012: Eine Ziffer stimmt, steht aber falsch.
+480: Eine Ziffer stimmt und steht richtig.
+378: Eine Ziffer stimmt, steht aber falsch.
+239: Eine Ziffer stimmt, steht aber falsch.
+725: Eine Ziffer stimmt und steht richtig.
+
+Schreib deinen Code in die Kommentare, bevor du weiterwischst. Auflösung und Lösungsweg findest du auf den letzten Slides.
+
+#9xKLUG #Zahlenschloss #Logikrätsel #Denksport #Gehirnjogging

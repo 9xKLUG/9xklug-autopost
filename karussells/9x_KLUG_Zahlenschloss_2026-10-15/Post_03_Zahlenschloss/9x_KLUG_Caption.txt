@@ -1,0 +1,12 @@
+Detektiv-Modus an.
+
+Welcher 3-stellige Code öffnet das Schloss? Jede Ziffer kommt nur einmal vor.
+753: Eine Ziffer stimmt und steht richtig.
+240: Eine Ziffer stimmt, steht aber falsch.
+962: Keine Ziffer stimmt.
+526: Eine Ziffer stimmt, steht aber falsch.
+012: Eine Ziffer stimmt und steht richtig.
+
+Schreib deinen Code in die Kommentare, bevor du weiterwischst. Auflösung und Lösungsweg findest du auf den letzten Slides.
+
+#9xKLUG #Zahlenschloss #Logikrätsel #Denksport #Gehirnjogging

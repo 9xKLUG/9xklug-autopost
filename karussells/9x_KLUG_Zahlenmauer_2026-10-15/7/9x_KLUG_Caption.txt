@@ -1,0 +1,12 @@
+Stein für Stein zur Lösung.
+
+Jeder Stein ist die Summe der beiden Steine darunter. Welche Zahl steht ganz oben?
+?
+_ | 35
+_ | _ | 15
+_ | _ | _ | 8
+8 | _ | 4 | _ | _
+
+Schreib deine Zahl in die Kommentare, bevor du weiterwischst. Auflösung und Rechenweg findest du auf den letzten Slides.
+
+#9xKLUG #Zahlenmauer #Kopfrechnen #Denksport #Gehirnjogging
