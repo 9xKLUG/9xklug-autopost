@@ -1,0 +1,112 @@
+name: 9x KLUG Autopost
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # alle 15 Minuten nachsehen, ob etwas fällig ist
+  workflow_dispatch:
+    inputs:
+      aktion:
+        description: "Was soll passieren?"
+        type: choice
+        default: vorschau
+        options:
+          - vorschau
+          - test-reel
+          - test-karussell
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  issues: write
+
+concurrency:
+  group: autopost
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  vorbereiten:
+    runs-on: ubuntu-latest
+    outputs:
+      faellig: ${{ steps.prep.outputs.faellig }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow pyyaml requests
+
+      - name: Vorschau
+        if: github.event_name == 'workflow_dispatch' && inputs.aktion == 'vorschau'
+        run: python autopost.py vorschau 14
+
+      - name: Fälligen Post vorbereiten
+        id: prep
+        if: github.event_name == 'schedule' || startsWith(inputs.aktion, 'test-')
+        run: |
+          case "${{ inputs.aktion }}" in
+            test-reel) python autopost.py prepare --test reel ;;
+            test-karussell) python autopost.py prepare --test karussell ;;
+            *) python autopost.py prepare ;;
+          esac
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.prep.outputs.faellig == 'true'
+        with:
+          path: _site
+
+      - uses: actions/upload-artifact@v4
+        if: steps.prep.outputs.faellig == 'true'
+        with:
+          name: plan
+          path: _plan.json
+
+      - name: Status speichern (Vorschau-Liste oder abgehakter Termin)
+        if: steps.prep.outputs.faellig != 'true'
+        run: |
+          git config user.name "9xklug-autopost"
+          git config user.email "autopost@users.noreply.github.com"
+          git add status 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "Status aktualisiert" && git pull --rebase && git push)
+
+  bereitstellen:
+    needs: vorbereiten
+    if: needs.vorbereiten.outputs.faellig == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  veroeffentlichen:
+    needs: [vorbereiten, bereitstellen]
+    runs-on: ubuntu-latest
+    env:
+      IG_TOKEN: ${{ secrets.IG_TOKEN }}
+      GH_PAT: ${{ secrets.GH_PAT }}
+      PAGES_URL: ${{ needs.bereitstellen.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow pyyaml requests
+      - uses: actions/download-artifact@v4
+        with:
+          name: plan
+      - name: Auf Instagram posten
+        run: python autopost.py publish
+      - name: Status speichern
+        if: always()
+        run: |
+          git config user.name "9xklug-autopost"
+          git config user.email "autopost@users.noreply.github.com"
+          git add status 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "Gepostet" && git pull --rebase && git push)

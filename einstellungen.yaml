@@ -1,0 +1,87 @@
+# ============================================================
+#  9x KLUG Autopost: Einstellungen
+#  Hier darfst du alles ändern. Danach speichern und in
+#  GitHub Desktop auf "Commit" und "Push" klicken.
+#  Wichtig: Die Einrückungen (Leerzeichen) beibehalten!
+# ============================================================
+
+# Auf true setzen, um das automatische Posten anzuhalten
+pausiert: false
+
+# Ab diesem Tag wird gepostet
+aktiv_ab: 2026-10-19
+
+# Wann was gepostet wird (Uhrzeit Berlin). Beliebig viele Zeilen möglich.
+# typ ist entweder: reel  oder  karussell
+zeitplan:
+  - zeit: "08:00"
+    typ: reel
+  - zeit: "16:30"
+    typ: karussell
+
+# Wird ein Termin verpasst (z. B. Störung bei GitHub), wird höchstens
+# so viele Stunden später noch nachgeholt. Danach fällt er aus.
+max_verspaetung_stunden: 6
+
+# ------------------------------------------------------------
+#  KARUSSELLS
+# ------------------------------------------------------------
+karussell_hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
+
+# Der Tag, an dem die erste Rätselart der Liste unten dran war.
+# Ab da läuft die Liste Tag für Tag reihum.
+# (19.10.2026 = Symbol-Gleichungen, also ist der Starttag der Liste der 14.10.2026)
+rhythmus_start: 2026-10-14
+
+# Reihenfolge der Rätselarten.
+# name  = wie du sie nennst
+# ordner = wie sie im Ordnernamen steht (9x_KLUG_<ordner>_<Datum>)
+karussell_rhythmus:
+  - name: Zahlenschloss
+    ordner: Zahlenschloss
+  - name: Quadrate zählen
+    ordner: Quadrate_zaehlen
+  - name: Minensuche
+    ordner: Minensuche
+  - name: Buchstabenreihen
+    ordner: Buchstabenreihen
+  - name: Papierfalten
+    ordner: Papier_falten
+  - name: Symbol-Gleichungen
+    ordner: Symbolraetsel
+  - name: Zahnräder
+    ordner: Zahnraeder
+  - name: Zahlenmauer
+    ordner: Zahlenmauer
+  - name: Würfelnetz
+    ordner: Wuerfelnetz
+  - name: Streichhölzer
+    ordner: Streichhoelzer
+  - name: Zahlenreihen
+    ordner: Zahlenreihen
+  - name: Würfeltürme
+    ordner: Wuerfeltuerme
+  - name: "< > Gitter"
+    ordner: Groesser_Kleiner
+  - name: Gedrehte Figur
+    ordner: Gedrehte_Figur
+
+# ------------------------------------------------------------
+#  REELS
+#  Reihenfolge reihum, nie zwei Tage hintereinander derselbe Typ.
+#  ordner = Name des Unterordners im Ordner "reels"
+#  Neue Typen einfach unten anhängen.
+# ------------------------------------------------------------
+reel_rhythmus:
+  - ordner: Fun Fact
+    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
+  - ordner: Entweder oder
+    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
+  - ordner: Ausreißer
+    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
+  - ordner: optische täuschung
+    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
+  - ordner: wahr oder falsch
+    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
+  - ordner: Wissensfragen
+    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
