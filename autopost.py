@@ -98,10 +98,23 @@ def warnung(text):
 
 
 # ---------------------------------------------------------------- Vorrat
-def karussell_posts(cfg, st):
+WOCHENTAGE = ["mo", "di", "mi", "do", "fr", "sa", "so"]
+
+
+def extra_termine(cfg):
+    """Zusätzliche Termine mit festen Tagen (Abschnitt extra_termine)."""
+    return cfg.get("extra_termine") or []
+
+
+def an_tag(extra, day):
+    tage = [norm(t)[:2] for t in (extra.get("tage") or WOCHENTAGE)]
+    return WOCHENTAGE[day.weekday()] in tage
+
+
+def karussell_posts(cfg, st, entries=None):
     """dict ordner-key -> Liste noch nicht geposteter Post-Ordner (sortiert)."""
     done = set(st["gepostet"])
-    pool = {norm(e["ordner"]): [] for e in cfg["karussell_rhythmus"]}
+    pool = {norm(e["ordner"]): [] for e in (entries if entries is not None else cfg["karussell_rhythmus"])}
     if not KARUSSELL_DIR.exists():
         return pool
     for batch in sorted(KARUSSELL_DIR.iterdir(), key=lambda p: natkey(p.name)):
@@ -114,9 +127,9 @@ def karussell_posts(cfg, st):
     return pool
 
 
-def reel_files(cfg, st):
+def reel_files(cfg, st, entries=None):
     done = set(st["gepostet"])
-    pool = {norm(e["ordner"]): [] for e in cfg["reel_rhythmus"]}
+    pool = {norm(e["ordner"]): [] for e in (entries if entries is not None else cfg["reel_rhythmus"])}
     if not REEL_DIR.exists():
         return pool
     for d in REEL_DIR.iterdir():
@@ -204,14 +217,19 @@ def find_cover(video):
     return sorted(cands, key=lambda p: len(p.stem))[0] if cands else None
 
 
-def build(item_type, cfg, st, day, test=False):
+def build(item_type, cfg, st, day, test=False, extra=None):
     """Bereitet einen Post vor und legt Dateien in _site/ ab. Gibt den Plan zurück."""
     if SITE.exists():
         shutil.rmtree(SITE)
     SITE.mkdir()
     stamp = dt.datetime.now(TZ).strftime("%Y%m%d%H%M%S")
     if item_type == "karussell":
-        entry, post, hinweis = pick_karussell(cfg, st, day, karussell_posts(cfg, st))
+        if extra:
+            items = karussell_posts(cfg, st, [extra])[norm(extra["ordner"])]
+            entry = dict(extra, name=extra.get("name", extra["ordner"]))
+            post, hinweis = (items[0], None) if items else (None, f"Kein Vorrat mehr für '{entry['name']}' (zusätzlicher Termin fällt aus). Bitte nachlegen.")
+        else:
+            entry, post, hinweis = pick_karussell(cfg, st, day, karussell_posts(cfg, st))
         if not post:
             return None, hinweis
         slides = sorted([f for f in post.iterdir() if f.suffix.lower() in IMG_EXT], key=lambda p: natkey(p.name))
@@ -224,10 +242,15 @@ def build(item_type, cfg, st, day, test=False):
             to_jpeg(s, SITE / name)
             files.append(name)
         text = caption_text(post)
-        caption = (text + "\n\n" if text else "") + cfg["karussell_hashtags"]
+        caption = (text + "\n\n" if text else "") + (entry.get("hashtags") or cfg["karussell_hashtags"])
         plan = {"typ": "karussell", "art": entry["name"], "quelle": rel(post), "bilder": files, "caption": caption}
     else:
-        entry, video, hinweis = pick_reel(cfg, st.get("letzter_reel_typ"), reel_files(cfg, st))
+        if extra:
+            items = reel_files(cfg, st, [extra])[norm(extra["ordner"])]
+            entry = extra
+            video, hinweis = (items[0], None) if items else (None, f"Kein Vorrat mehr für '{extra['ordner']}' (zusätzliches Reel fällt aus). Bitte nachlegen.")
+        else:
+            entry, video, hinweis = pick_reel(cfg, st.get("letzter_reel_typ"), reel_files(cfg, st))
         if not video:
             return None, hinweis
         vname = f"{stamp}_reel{video.suffix.lower()}"
@@ -238,8 +261,9 @@ def build(item_type, cfg, st, day, test=False):
             cname = f"{stamp}_cover.jpg"
             to_jpeg(cover, SITE / cname, fit_feed=False)
         plan = {"typ": "reel", "art": entry["ordner"], "quelle": rel(video), "video": vname,
-                "cover": cname, "caption": entry["hashtags"]}
+                "cover": cname, "caption": entry.get("hashtags", "")}
     plan["test"] = test
+    plan["extra"] = bool(extra)
     return plan, hinweis
 
 
@@ -252,15 +276,19 @@ def due_slot(cfg, st, now):
         print("Noch nicht aktiv.")
         return None
     erledigt = set(st["termine_erledigt"])
-    for slot in sorted(cfg["zeitplan"], key=lambda s: s["zeit"]):
+    slots = [dict(s, extra=None) for s in cfg["zeitplan"]]
+    slots += [{"zeit": e["zeit"], "typ": e["typ"], "extra": e} for e in extra_termine(cfg) if an_tag(e, now.date())]
+    for slot in sorted(slots, key=lambda s: str(s["zeit"])):
         h, m = map(int, str(slot["zeit"]).split(":"))
         t = now.replace(hour=h, minute=m, second=0, microsecond=0)
         key = f"{now.date()}_{slot['zeit']}_{slot['typ']}"
+        if slot["extra"]:
+            key += "_extra_" + norm(slot["extra"]["ordner"])
         late = (now - t).total_seconds() / 3600
         if st.get("fehlversuche", {}).get(key, 0) >= 3:
             continue
         if key not in erledigt and 0 <= late <= cfg.get("max_verspaetung_stunden", 6):
-            return {"key": key, "typ": slot["typ"]}
+            return {"key": key, "typ": slot["typ"], "extra": slot["extra"]}
     return None
 
 
@@ -270,7 +298,7 @@ def cmd_prepare(test_type=None):
     slot = {"key": None, "typ": test_type} if test_type else due_slot(cfg, st, now)
     plan = None
     if slot:
-        plan, hinweis = build(slot["typ"], cfg, st, now.date(), test=bool(test_type))
+        plan, hinweis = build(slot["typ"], cfg, st, now.date(), test=bool(test_type), extra=slot.get("extra"))
         if hinweis:
             warnung(hinweis)
         if plan:
@@ -399,7 +427,7 @@ def _publish(plan):
     st["gepostet"].append(plan["quelle"])
     if plan.get("termin"):
         st["termine_erledigt"].append(plan["termin"])
-    if plan["typ"] == "reel":
+    if plan["typ"] == "reel" and not plan.get("extra"):
         st["letzter_reel_typ"] = plan["art"]
     st["verlauf"].append({"zeit": dt.datetime.now(TZ).isoformat(timespec="minutes"), "typ": plan["typ"],
                           "art": plan["art"], "quelle": plan["quelle"], "test": plan.get("test", False)})
@@ -419,16 +447,28 @@ def cmd_vorschau(days=14, ausgabe=True):
     jetzt = dt.datetime.now(TZ)
     start = max(jetzt.date(), as_date(cfg["aktiv_ab"]))
     kpool, rpool = karussell_posts(cfg, st), reel_files(cfg, st)
+    extras = extra_termine(cfg)
+    xpool = {}
+    for e in extras:
+        f = karussell_posts if e["typ"] == "karussell" else reel_files
+        xpool[id(e)] = list(f(cfg, st, [e])[norm(e["ordner"])])
     last = st.get("letzter_reel_typ")
     wd = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
     lines = ["| Datum | Zeit | Typ | Art | Datei |", "|---|---|---|---|---|"]
     rows = []
     for d in range(days):
         day = start + dt.timedelta(days=d)
-        for slot in sorted(cfg["zeitplan"], key=lambda s: s["zeit"]):
+        slots = [dict(s, extra=None) for s in cfg["zeitplan"]]
+        slots += [{"zeit": e["zeit"], "typ": e["typ"], "extra": e} for e in extras if an_tag(e, day)]
+        for slot in sorted(slots, key=lambda s: str(s["zeit"])):
             if day == jetzt.date() and str(slot["zeit"]) <= jetzt.strftime("%H:%M"):
                 continue  # heute schon vorbei
-            if slot["typ"] == "karussell":
+            if slot["extra"]:
+                e = slot["extra"]
+                items = xpool[id(e)]
+                item = items.pop(0) if items else None
+                art = e.get("name", e["ordner"]) + " (extra)"
+            elif slot["typ"] == "karussell":
                 e, item, _ = pick_karussell(cfg, st, day, kpool)
                 art = e["name"] if e else "-"
                 if item:
@@ -447,6 +487,10 @@ def cmd_vorschau(days=14, ausgabe=True):
         f"{e['name']}: {len(karussell_posts(cfg, st)[norm(e['ordner'])])}" for e in cfg["karussell_rhythmus"])]
     vorrat.append("**Vorrat Reels:** " + ", ".join(
         f"{e['ordner']}: {len(reel_files(cfg, st)[norm(e['ordner'])])}" for e in cfg["reel_rhythmus"]))
+    if extras:
+        vorrat.append("**Vorrat Zusatztermine:** " + ", ".join(
+            f"{e.get('name', e['ordner'])}: {len((karussell_posts if e['typ'] == 'karussell' else reel_files)(cfg, st, [e])[norm(e['ordner'])])}"
+            for e in extras))
     write_csv(GEPLANT_CSV, ["Datum", "Tag", "Uhrzeit", "Typ", "Art", "Datei/Ordner"], rows)
     text = "\n".join(lines + vorrat)
     if not ausgabe:

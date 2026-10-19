@@ -87,3 +87,10 @@ reel_rhythmus:
     hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
   - ordner: Wer bin ich
     hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging" #werbinich
+
+extra_termine:
+  - typ: reel
+    ordner: Welches Jahr
+    tage: [Di]
+    zeit: "12:00"
+    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
