@@ -24,5 +24,8 @@
       "quelle": "karussells/9x_KLUG_Symbolraetsel_2026-10-15(8)/Post_01_Symbolraetsel",
       "test": false
     }
-  ]
+  ],
+  "fehlversuche": {
+    "2026-10-20_07:45_reel": 1
+  }
 }
