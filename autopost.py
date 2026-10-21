@@ -21,8 +21,48 @@ from zoneinfo import ZoneInfo
 import yaml
 
 ROOT = Path(__file__).resolve().parent
-KARUSSELL_DIR = ROOT / "karussells"
-REEL_DIR = ROOT / "reels"
+
+
+def media_root():
+    """Wo die Reels/Karussells liegen.
+
+    Auf dem eigenen PC: im Repo-Ordner. Bei GitHub (Spar-Modus) werden Videos und
+    Bilder NICHT heruntergeladen. Stattdessen werden leere Platzhalter mit denselben
+    Namen in einem Nebenordner angelegt. Nur die Dateien, die wirklich gepostet
+    werden, werden danach einzeln geholt (siehe hole_dateien)."""
+    if (ROOT / "reels").exists() or (ROOT / "karussells").exists():
+        return ROOT
+    try:
+        out = subprocess.run(["git", "-C", str(ROOT), "ls-files", "-z", "--", "karussells", "reels"],
+                             capture_output=True, check=True).stdout
+    except Exception:
+        return ROOT
+    if not out:
+        return ROOT
+    schatten = Path(os.environ.get("RUNNER_TEMP", "/tmp")) / "9xklug_dateien"
+    for raw in out.split(b"\0"):
+        if raw:
+            p = schatten / raw.decode("utf-8")
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.touch()
+    print("Spar-Modus: Medien werden nur bei Bedarf geladen.")
+    return schatten
+
+
+MEDIA_ROOT = media_root()
+KARUSSELL_DIR = MEDIA_ROOT / "karussells"
+REEL_DIR = MEDIA_ROOT / "reels"
+
+
+def hole_dateien(paths):
+    """Lädt im Spar-Modus genau diese Dateien von GitHub (statt alles)."""
+    if MEDIA_ROOT == ROOT:
+        return
+    for p in paths:
+        gitpfad = p.relative_to(MEDIA_ROOT).as_posix()
+        data = subprocess.run(["git", "-C", str(ROOT), "cat-file", "blob", "HEAD:" + gitpfad],
+                              capture_output=True, check=True).stdout
+        p.write_bytes(data)
 STATUS_FILE = ROOT / "status" / "gepostet.json"
 SITE = ROOT / "_site"
 PLAN_FILE = ROOT / "_plan.json"
@@ -82,7 +122,7 @@ def kurzname(quelle):
 
 
 def rel(p):
-    return unicodedata.normalize("NFC", p.relative_to(ROOT).as_posix())
+    return unicodedata.normalize("NFC", p.relative_to(MEDIA_ROOT).as_posix())
 
 
 def as_date(v):
@@ -235,6 +275,7 @@ def build(item_type, cfg, st, day, test=False, extra=None):
             entry, post, hinweis = pick_karussell(cfg, st, day, karussell_posts(cfg, st))
         if not post:
             return None, hinweis
+        hole_dateien([f for f in post.iterdir() if f.is_file()])
         slides = sorted([f for f in post.iterdir() if f.suffix.lower() in IMG_EXT], key=lambda p: natkey(p.name))
         if len(slides) > 10:
             hinweis = (hinweis or "") + f" {rel(post)} hat {len(slides)} Slides, Instagram erlaubt 10. Nur die ersten 10 gepostet."
@@ -257,8 +298,9 @@ def build(item_type, cfg, st, day, test=False, extra=None):
         if not video:
             return None, hinweis
         vname = f"{stamp}_reel{video.suffix.lower()}"
-        shutil.copy(video, SITE / vname)
         cover = find_cover(video)
+        hole_dateien([video] + ([cover] if cover else []))
+        shutil.copy(video, SITE / vname)
         cname = None
         if cover:
             cname = f"{stamp}_cover.jpg"

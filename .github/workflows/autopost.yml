@@ -34,6 +34,9 @@ jobs:
       faellig: ${{ steps.prep.outputs.faellig }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          filter: blob:none        # Videos/Bilder nicht vorab laden
+          sparse-checkout: status  # nur Programm, Einstellungen und Status
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -94,6 +97,9 @@ jobs:
       PAGES_URL: ${{ needs.bereitstellen.outputs.url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          filter: blob:none        # Videos/Bilder nicht vorab laden
+          sparse-checkout: status  # nur Programm, Einstellungen und Status
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
