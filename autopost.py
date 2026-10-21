@@ -211,6 +211,9 @@ def caption_text(post_dir):
 def find_cover(video):
     pngs = [p for p in video.parent.iterdir() if p.suffix.lower() in IMG_EXT]
     for p in pngs:
+        if norm(p.stem) == "titelbild":
+            return p
+    for p in pngs:
         if norm(p.stem) == norm(video.stem):
             return p
     cands = [p for p in pngs if norm(p.stem).startswith(norm(video.stem))]
