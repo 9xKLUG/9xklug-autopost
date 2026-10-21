@@ -85,7 +85,6 @@ reel_rhythmus:
     hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
   - ordner: Wissensfragen
     hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
-  
 
 extra_termine:
   - typ: reel
@@ -93,7 +92,7 @@ extra_termine:
     tage: [Di]
     zeit: "11:00"
     hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
-- typ: reel
+  - typ: reel
     ordner: Suchsel
     tage: [Mi]
     zeit: "11:00"
