@@ -4,15 +4,17 @@
     "karussells/9x_KLUG_Symbolraetsel_2026-10-15(8)/Post_01_Symbolraetsel",
     "reels/Entweder oder/9x_KLUG_Reel_Was_wurde_zuerst_erfunden.mp4",
     "reels/Welches Jahr/9x_KLUG_WelchesJahr_1917.mp4",
-    "karussells/9x_KLUG_Zahnraeder_2026-10-17(1)/Post_02_Zahnraeder"
+    "karussells/9x_KLUG_Zahnraeder_2026-10-17(1)/Post_02_Zahnraeder",
+    "reels/Ausreißer/9x_KLUG_Reel_Nur_ein_einziges_Wort_ist_anders.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
     "2026-10-19_16:30_karussell",
     "2026-10-20_12:00_reel_extra_welches jahr",
-    "2026-10-20_16:30_karussell"
+    "2026-10-20_16:30_karussell",
+    "2026-10-21_07:45_reel"
   ],
-  "letzter_reel_typ": "Entweder oder",
+  "letzter_reel_typ": "Ausreißer",
   "token_erneuert": "2026-10-19",
   "verlauf": [
     {
@@ -48,6 +50,13 @@
       "typ": "karussell",
       "art": "Zahnräder",
       "quelle": "karussells/9x_KLUG_Zahnraeder_2026-10-17(1)/Post_02_Zahnraeder",
+      "test": false
+    },
+    {
+      "zeit": "2026-10-21T08:06+02:00",
+      "typ": "reel",
+      "art": "Ausreißer",
+      "quelle": "reels/Ausreißer/9x_KLUG_Reel_Nur_ein_einziges_Wort_ist_anders.mp4",
       "test": false
     }
   ],
