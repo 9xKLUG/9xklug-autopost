@@ -6,7 +6,8 @@
     "reels/Welches Jahr/9x_KLUG_WelchesJahr_1917.mp4",
     "karussells/9x_KLUG_Zahnraeder_2026-10-17(1)/Post_02_Zahnraeder",
     "reels/Ausreißer/9x_KLUG_Reel_Nur_ein_einziges_Wort_ist_anders.mp4",
-    "reels/Suchsel/9x_KLUG_Suchsel_Baeume_AHORN_BIRKE_EIBE.mp4"
+    "reels/Suchsel/9x_KLUG_Suchsel_Baeume_AHORN_BIRKE_EIBE.mp4",
+    "karussells/9x_KLUG_Zahlenmauer_2026-10-15/Post_01_Zahlenmauer"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -14,7 +15,8 @@
     "2026-10-20_12:00_reel_extra_welches jahr",
     "2026-10-20_16:30_karussell",
     "2026-10-21_07:45_reel",
-    "2026-10-21_11:00_reel_extra_suchsel"
+    "2026-10-21_11:00_reel_extra_suchsel",
+    "2026-10-21_16:30_karussell"
   ],
   "letzter_reel_typ": "Ausreißer",
   "token_erneuert": "2026-10-19",
@@ -66,6 +68,13 @@
       "typ": "reel",
       "art": "Suchsel",
       "quelle": "reels/Suchsel/9x_KLUG_Suchsel_Baeume_AHORN_BIRKE_EIBE.mp4",
+      "test": false
+    },
+    {
+      "zeit": "2026-10-21T17:13+02:00",
+      "typ": "karussell",
+      "art": "Zahlenmauer",
+      "quelle": "karussells/9x_KLUG_Zahlenmauer_2026-10-15/Post_01_Zahlenmauer",
       "test": false
     }
   ],
