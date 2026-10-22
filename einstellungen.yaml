@@ -14,9 +14,9 @@ aktiv_ab: 2026-10-19
 # Wann was gepostet wird (Uhrzeit Berlin). Beliebig viele Zeilen möglich.
 # typ ist entweder: reel  oder  karussell
 zeitplan:
-  - zeit: "07:45"
+  - zeit: "10:30"
     typ: reel
-  - zeit: "16:30"
+  - zeit: "14:30"
     typ: karussell
 
 # Wird ein Termin verpasst (z. B. Störung bei GitHub), wird höchstens
@@ -90,20 +90,20 @@ extra_termine:
   - typ: reel
     ordner: Welches Jahr
     tage: [Di]
-    zeit: "11:00"
+    zeit: "17:00"
     hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
   - typ: reel
     ordner: Suchsel
     tage: [Mi]
-    zeit: "11:00"
+    zeit: "17:00"
     hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
   - typ: reel
     ordner: Was verbindet sie
     tage: [Do]
-    zeit: "11:00"
+    zeit: "17:00"
     hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #werbinich"
   - typ: reel
     ordner: Wer bin ich
     tage: [Fr]
-    zeit: "11:00"
+    zeit: "17:00"
     hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #werbinich"
