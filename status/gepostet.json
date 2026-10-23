@@ -11,7 +11,8 @@
     "reels/optische täuschung/9x_KLUG_Reel_Beobachte_das_orange_Quadrat_hinter_den_.mp4",
     "reels/Was verbindet sie/9x_KLUG_WasVerbindetSie_Banane_Paranuss_Rauchmelder.mp4",
     "karussells/9x_KLUG_Wuerfelnetz_2026-10-17(2)/Post_01_Wuerfelnetz",
-    "reels/Was verbindet sie/9x_KLUG_WasVerbindetSie_CocaCola_Ketchup_Cornflakes.mp4"
+    "reels/Was verbindet sie/9x_KLUG_WasVerbindetSie_CocaCola_Ketchup_Cornflakes.mp4",
+    "reels/wahr oder falsch/9x_KLUG_Reel_Die_Chinesische_Mauer_ist_vom_Mond_aus_s.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -24,9 +25,10 @@
     "2026-10-22_07:45_reel",
     "2026-10-22_11:00_reel_extra_was verbindet sie",
     "2026-10-22_16:30_karussell",
-    "2026-10-22_17:00_reel_extra_was verbindet sie"
+    "2026-10-22_17:00_reel_extra_was verbindet sie",
+    "2026-10-23_10:30_reel"
   ],
-  "letzter_reel_typ": "optische täuschung",
+  "letzter_reel_typ": "wahr oder falsch",
   "token_erneuert": "2026-10-19",
   "verlauf": [
     {
@@ -111,6 +113,13 @@
       "typ": "reel",
       "art": "Was verbindet sie",
       "quelle": "reels/Was verbindet sie/9x_KLUG_WasVerbindetSie_CocaCola_Ketchup_Cornflakes.mp4",
+      "test": false
+    },
+    {
+      "zeit": "2026-10-23T10:50+02:00",
+      "typ": "reel",
+      "art": "wahr oder falsch",
+      "quelle": "reels/wahr oder falsch/9x_KLUG_Reel_Die_Chinesische_Mauer_ist_vom_Mond_aus_s.mp4",
       "test": false
     }
   ],
