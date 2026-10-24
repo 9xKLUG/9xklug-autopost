@@ -15,7 +15,8 @@
     "reels/wahr oder falsch/9x_KLUG_Reel_Die_Chinesische_Mauer_ist_vom_Mond_aus_s.mp4",
     "karussells/9x_KLUG_Streichhoelzer_2026-10-17/Post_01_Streichhoelzer",
     "reels/Wer bin ich/9x_KLUG_WerBinIch_Ada_Lovelace.mp4",
-    "reels/Wissensfragen/9x_KLUG_Reel_Als_was_wurde_Ketchup_in_den_1830er_Jahr.mp4"
+    "reels/Wissensfragen/9x_KLUG_Reel_Als_was_wurde_Ketchup_in_den_1830er_Jahr.mp4",
+    "karussells/9x_KLUG_Zahlenreihen_2026-10-15(3)/Post_01_Zahlenreihe"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -32,7 +33,8 @@
     "2026-10-23_10:30_reel",
     "2026-10-23_14:30_karussell",
     "2026-10-23_17:00_reel_extra_wer bin ich",
-    "2026-10-24_10:30_reel"
+    "2026-10-24_10:30_reel",
+    "2026-10-24_14:30_karussell"
   ],
   "letzter_reel_typ": "Wissensfragen",
   "token_erneuert": "2026-10-19",
@@ -147,6 +149,13 @@
       "typ": "reel",
       "art": "Wissensfragen",
       "quelle": "reels/Wissensfragen/9x_KLUG_Reel_Als_was_wurde_Ketchup_in_den_1830er_Jahr.mp4",
+      "test": false
+    },
+    {
+      "zeit": "2026-10-24T15:11+02:00",
+      "typ": "karussell",
+      "art": "Zahlenreihen",
+      "quelle": "karussells/9x_KLUG_Zahlenreihen_2026-10-15(3)/Post_01_Zahlenreihe",
       "test": false
     }
   ],
