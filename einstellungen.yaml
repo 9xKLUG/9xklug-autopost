@@ -13,11 +13,13 @@ aktiv_ab: 2026-10-19
 
 # Wann was gepostet wird (Uhrzeit Berlin). Beliebig viele Zeilen möglich.
 # typ ist entweder: reel  oder  karussell
+# tage (optional): nur an diesen Wochentagen. Ohne tage = jeden Tag.
 zeitplan:
   - zeit: "10:30"
     typ: reel
   - zeit: "14:30"
     typ: karussell
+    tage: [Mo, Sa, So]
 
 # Wird ein Termin verpasst (z. B. Störung bei GitHub), wird höchstens
 # so viele Stunden später noch nachgeholt. Danach fällt er aus.
@@ -28,9 +30,9 @@ max_verspaetung_stunden: 6
 # ------------------------------------------------------------
 karussell_hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
 
-# Der Tag, an dem die erste Rätselart der Liste unten dran war.
-# Ab da läuft die Liste Tag für Tag reihum.
-# (19.10.2026 = Symbol-Gleichungen, also ist der Starttag der Liste der 14.10.2026)
+# Die Rätselarten kommen der Reihe nach dran, egal an welchem Tag.
+# Nach der zuletzt geposteten Art kommt einfach die nächste in der Liste.
+# (rhythmus_start wird nicht mehr gebraucht, darf aber stehen bleiben)
 rhythmus_start: 2026-10-14
 
 # Reihenfolge der Rätselarten.

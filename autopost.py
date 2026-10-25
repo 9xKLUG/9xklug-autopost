@@ -180,21 +180,30 @@ def reel_files(cfg, st, entries=None):
     return pool
 
 
-def pick_karussell(cfg, st, day, pool):
+def letzte_karussell_art(st):
+    """Name der zuletzt (echt, nicht test) geposteten Karussell-Art."""
+    if st.get("letzte_karussell_art"):
+        return st["letzte_karussell_art"]
+    for v in reversed(st.get("verlauf", [])):
+        if v.get("typ") == "karussell" and not v.get("test"):
+            return v.get("art")
+    return None
+
+
+def pick_karussell(cfg, last_art, pool):
+    """Rätselarten kommen der Reihe nach dran (egal an welchem Tag).
+    Hat eine Art keinen Vorrat mehr, kommt die nächste in der Liste dran."""
     rhythm = cfg["karussell_rhythmus"]
-    idx = (day - as_date(cfg["rhythmus_start"])).days % len(rhythm)
-    heute = rhythm[idx]
-    if pool.get(norm(heute["ordner"])):
-        return heute, pool[norm(heute["ordner"])][0], None
-    # Ersatz: Art mit dem meisten Vorrat, aber nicht die von gestern oder morgen
-    nachbarn = {norm(rhythm[(idx - 1) % len(rhythm)]["ordner"]), norm(rhythm[(idx + 1) % len(rhythm)]["ordner"])}
-    mit_vorrat = [e for e in rhythm if pool.get(norm(e["ordner"]))]
-    kandidaten = [e for e in mit_vorrat if norm(e["ordner"]) not in nachbarn] or mit_vorrat
-    if not kandidaten:
-        return None, None, "Keine Karussells mehr im Vorrat. Bitte nachlegen."
-    e = max(kandidaten, key=lambda x: len(pool[norm(x["ordner"])]))
-    return e, pool[norm(e["ordner"])][0], (
-        f"Kein Vorrat mehr für '{heute['name']}'. Stattdessen gepostet: '{e['name']}'. Bitte nachlegen.")
+    namen = [norm(e["name"]) for e in rhythm]
+    start = (namen.index(norm(last_art)) + 1) if last_art and norm(last_art) in namen else 0
+    heute = rhythm[start % len(rhythm)]
+    for step in range(len(rhythm)):
+        e = rhythm[(start + step) % len(rhythm)]
+        if pool.get(norm(e["ordner"])):
+            hinweis = None if step == 0 else (
+                f"Kein Vorrat mehr für '{heute['name']}'. Stattdessen gepostet: '{e['name']}'. Bitte nachlegen.")
+            return e, pool[norm(e["ordner"])][0], hinweis
+    return None, None, "Keine Karussells mehr im Vorrat. Bitte nachlegen."
 
 
 def pick_reel(cfg, last_type, pool):
@@ -272,7 +281,7 @@ def build(item_type, cfg, st, day, test=False, extra=None):
             entry = dict(extra, name=extra.get("name", extra["ordner"]))
             post, hinweis = (items[0], None) if items else (None, f"Kein Vorrat mehr für '{entry['name']}' (zusätzlicher Termin fällt aus). Bitte nachlegen.")
         else:
-            entry, post, hinweis = pick_karussell(cfg, st, day, karussell_posts(cfg, st))
+            entry, post, hinweis = pick_karussell(cfg, letzte_karussell_art(st), karussell_posts(cfg, st))
         if not post:
             return None, hinweis
         hole_dateien([f for f in post.iterdir() if f.is_file()])
@@ -321,7 +330,7 @@ def due_slot(cfg, st, now):
         print("Noch nicht aktiv.")
         return None
     erledigt = set(st["termine_erledigt"])
-    slots = [dict(s, extra=None) for s in cfg["zeitplan"]]
+    slots = [dict(s, extra=None) for s in cfg["zeitplan"] if an_tag(s, now.date())]
     slots += [{"zeit": e["zeit"], "typ": e["typ"], "extra": e} for e in extra_termine(cfg) if an_tag(e, now.date())]
     for slot in sorted(slots, key=lambda s: str(s["zeit"])):
         h, m = map(int, str(slot["zeit"]).split(":"))
@@ -474,6 +483,8 @@ def _publish(plan):
         st["termine_erledigt"].append(plan["termin"])
     if plan["typ"] == "reel" and not plan.get("extra"):
         st["letzter_reel_typ"] = plan["art"]
+    if plan["typ"] == "karussell" and not plan.get("extra") and not plan.get("test"):
+        st["letzte_karussell_art"] = plan["art"]
     st["verlauf"].append({"zeit": dt.datetime.now(TZ).isoformat(timespec="minutes"), "typ": plan["typ"],
                           "art": plan["art"], "quelle": plan["quelle"], "test": plan.get("test", False)})
     st["termine_erledigt"] = st["termine_erledigt"][-200:]
@@ -498,12 +509,13 @@ def cmd_vorschau(days=14, ausgabe=True):
         f = karussell_posts if e["typ"] == "karussell" else reel_files
         xpool[id(e)] = list(f(cfg, st, [e])[norm(e["ordner"])])
     last = st.get("letzter_reel_typ")
+    last_k = letzte_karussell_art(st)
     wd = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
     lines = ["| Datum | Zeit | Typ | Art | Datei |", "|---|---|---|---|---|"]
     rows = []
     for d in range(days):
         day = start + dt.timedelta(days=d)
-        slots = [dict(s, extra=None) for s in cfg["zeitplan"]]
+        slots = [dict(s, extra=None) for s in cfg["zeitplan"] if an_tag(s, day)]
         slots += [{"zeit": e["zeit"], "typ": e["typ"], "extra": e} for e in extras if an_tag(e, day)]
         for slot in sorted(slots, key=lambda s: str(s["zeit"])):
             if day == jetzt.date() and str(slot["zeit"]) <= jetzt.strftime("%H:%M"):
@@ -514,10 +526,11 @@ def cmd_vorschau(days=14, ausgabe=True):
                 item = items.pop(0) if items else None
                 art = e.get("name", e["ordner"]) + " (extra)"
             elif slot["typ"] == "karussell":
-                e, item, _ = pick_karussell(cfg, st, day, kpool)
+                e, item, _ = pick_karussell(cfg, last_k, kpool)
                 art = e["name"] if e else "-"
                 if item:
                     kpool[norm(e["ordner"])].remove(item)
+                    last_k = e["name"]
             else:
                 e, item, _ = pick_reel(cfg, last, rpool)
                 art = e["ordner"] if e else "-"
