@@ -19,7 +19,8 @@
     "karussells/9x_KLUG_Zahlenreihen_2026-10-15(3)/Post_01_Zahlenreihe",
     "reels/Fun Fact/9x_KLUG_Reel_Bananen_sind_gesund.mp4",
     "karussells/9x_KLUG_Wuerfeltuerme_2026-10-17(1)/Post_01_Wuerfeltuerme",
-    "reels/Entweder oder/9x_KLUG_Reel_Was_wurde_zuerst_erfunden_fax.mp4"
+    "reels/Entweder oder/9x_KLUG_Reel_Was_wurde_zuerst_erfunden_fax.mp4",
+    "karussells/9x_KLUG_Groesser_Kleiner_2026-10-17(1)/Post_01_Groesser_Kleiner"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -40,7 +41,8 @@
     "2026-10-24_14:30_karussell",
     "2026-10-25_10:30_reel",
     "2026-10-25_14:30_karussell",
-    "2026-10-26_10:30_reel"
+    "2026-10-26_10:30_reel",
+    "2026-10-26_14:30_karussell"
   ],
   "letzter_reel_typ": "Entweder oder",
   "token_erneuert": "2026-10-26",
@@ -184,10 +186,17 @@
       "art": "Entweder oder",
       "quelle": "reels/Entweder oder/9x_KLUG_Reel_Was_wurde_zuerst_erfunden_fax.mp4",
       "test": false
+    },
+    {
+      "zeit": "2026-10-26T15:09+01:00",
+      "typ": "karussell",
+      "art": "< > Gitter",
+      "quelle": "karussells/9x_KLUG_Groesser_Kleiner_2026-10-17(1)/Post_01_Groesser_Kleiner",
+      "test": false
     }
   ],
   "fehlversuche": {
     "2026-10-20_07:45_reel": 3
   },
-  "letzte_karussell_art": "Würfeltürme"
+  "letzte_karussell_art": "< > Gitter"
 }
