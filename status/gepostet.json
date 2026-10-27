@@ -20,7 +20,8 @@
     "reels/Fun Fact/9x_KLUG_Reel_Bananen_sind_gesund.mp4",
     "karussells/9x_KLUG_Wuerfeltuerme_2026-10-17(1)/Post_01_Wuerfeltuerme",
     "reels/Entweder oder/9x_KLUG_Reel_Was_wurde_zuerst_erfunden_fax.mp4",
-    "karussells/9x_KLUG_Groesser_Kleiner_2026-10-17(1)/Post_01_Groesser_Kleiner"
+    "karussells/9x_KLUG_Groesser_Kleiner_2026-10-17(1)/Post_01_Groesser_Kleiner",
+    "reels/Ausreißer/9x_KLUG_Reel_Nur_ein_einziges_Zeichen_ist_anders.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -42,9 +43,10 @@
     "2026-10-25_10:30_reel",
     "2026-10-25_14:30_karussell",
     "2026-10-26_10:30_reel",
-    "2026-10-26_14:30_karussell"
+    "2026-10-26_14:30_karussell",
+    "2026-10-27_10:30_reel"
   ],
-  "letzter_reel_typ": "Entweder oder",
+  "letzter_reel_typ": "Ausreißer",
   "token_erneuert": "2026-10-26",
   "verlauf": [
     {
@@ -192,6 +194,13 @@
       "typ": "karussell",
       "art": "< > Gitter",
       "quelle": "karussells/9x_KLUG_Groesser_Kleiner_2026-10-17(1)/Post_01_Groesser_Kleiner",
+      "test": false
+    },
+    {
+      "zeit": "2026-10-27T10:58+01:00",
+      "typ": "reel",
+      "art": "Ausreißer",
+      "quelle": "reels/Ausreißer/9x_KLUG_Reel_Nur_ein_einziges_Zeichen_ist_anders.mp4",
       "test": false
     }
   ],
