@@ -30,6 +30,11 @@ max_verspaetung_stunden: 6
 # ------------------------------------------------------------
 karussell_hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
 
+# true = das erste Slide (Cover) wird beim Posten weggelassen,
+# das Karussell startet direkt mit dem Rätsel. Deine Dateien bleiben unverändert.
+# false = Cover wird wie bisher mitgepostet.
+cover_weglassen: true
+
 # Die Rätselarten kommen der Reihe nach dran, egal an welchem Tag.
 # Nach der zuletzt geposteten Art kommt einfach die nächste in der Liste.
 # (rhythmus_start wird nicht mehr gebraucht, darf aber stehen bleiben)

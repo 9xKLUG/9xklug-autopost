@@ -286,6 +286,8 @@ def build(item_type, cfg, st, day, test=False, extra=None):
             return None, hinweis
         hole_dateien([f for f in post.iterdir() if f.is_file()])
         slides = sorted([f for f in post.iterdir() if f.suffix.lower() in IMG_EXT], key=lambda p: natkey(p.name))
+        if cfg.get("cover_weglassen") and len(slides) > 1:
+            slides = slides[1:]  # Cover (erstes Slide) überspringen, das Rätsel ist dann das erste Bild
         if len(slides) > 10:
             hinweis = (hinweis or "") + f" {rel(post)} hat {len(slides)} Slides, Instagram erlaubt 10. Nur die ersten 10 gepostet."
             slides = slides[:10]
