@@ -24,7 +24,8 @@
     "reels/Ausreißer/9x_KLUG_Reel_Nur_ein_einziges_Zeichen_ist_anders.mp4",
     "reels/Welches Jahr/9x_KLUG_WelchesJahr_1923.mp4",
     "reels/optische täuschung/9x_KLUG_Reel_Dann_passiert_etwas_Seltsames.mp4",
-    "reels/Suchsel/9x_KLUG_Suchsel_Baeume_ERLE_PAPPEL_ESPE.mp4"
+    "reels/Suchsel/9x_KLUG_Suchsel_Baeume_ERLE_PAPPEL_ESPE.mp4",
+    "reels/wahr oder falsch/9x_KLUG_Reel_Die_Universitaet_Oxford_ist_aelter_als_d.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -50,9 +51,10 @@
     "2026-10-27_10:30_reel",
     "2026-10-27_17:00_reel_extra_welches jahr",
     "2026-10-28_10:30_reel",
-    "2026-10-28_17:00_reel_extra_suchsel"
+    "2026-10-28_17:00_reel_extra_suchsel",
+    "2026-10-29_10:30_reel"
   ],
-  "letzter_reel_typ": "optische täuschung",
+  "letzter_reel_typ": "wahr oder falsch",
   "token_erneuert": "2026-10-26",
   "verlauf": [
     {
@@ -228,6 +230,13 @@
       "typ": "reel",
       "art": "Suchsel",
       "quelle": "reels/Suchsel/9x_KLUG_Suchsel_Baeume_ERLE_PAPPEL_ESPE.mp4",
+      "test": false
+    },
+    {
+      "zeit": "2026-10-29T10:44+01:00",
+      "typ": "reel",
+      "art": "wahr oder falsch",
+      "quelle": "reels/wahr oder falsch/9x_KLUG_Reel_Die_Universitaet_Oxford_ist_aelter_als_d.mp4",
       "test": false
     }
   ],
