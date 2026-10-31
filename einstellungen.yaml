@@ -19,7 +19,7 @@ zeitplan:
     typ: reel
   - zeit: "14:30"
     typ: karussell
-    tage: [Mo, Sa, So]
+    tage: [Sa]
 
 # Wird ein Termin verpasst (z. B. Störung bei GitHub), wird höchstens
 # so viele Stunden später noch nachgeholt. Danach fällt er aus.
@@ -79,9 +79,8 @@ karussell_rhythmus:
 #  ordner = Name des Unterordners im Ordner "reels"
 #  Neue Typen einfach unten anhängen.
 # ------------------------------------------------------------
+#  Fun Fact läuft seit 31.10.2026 nicht mehr in der Reihe, sondern fest Mo + So 14:30 (siehe extra_termine).
 reel_rhythmus:
-  - ordner: Fun Fact
-    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
   - ordner: Entweder oder
     hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
   - ordner: Ausreißer
@@ -94,6 +93,11 @@ reel_rhythmus:
     hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
 
 extra_termine:
+  - typ: reel
+    ordner: Fun Fact
+    tage: [Mo, So]
+    zeit: "14:30"
+    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
   - typ: reel
     ordner: Welches Jahr
     tage: [Di]
