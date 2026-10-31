@@ -441,12 +441,59 @@ def cmd_publish():
         raise
 
 
+def _caption_norm(t):
+    t = unicodedata.normalize("NFC", t or "")
+    return " ".join(t.split()).lower()
+
+
+def schon_online(uid, plan, st, minuten=None):
+    """Sucht auf dem Profil nach einem Post mit genau dieser Caption.
+    Schutz gegen Doppelposts: Instagram meldet manchmal einen Fehler, obwohl der Post schon online ist.
+    - Karussell mit eigenem Text: Caption ist eindeutig -> Suche über die letzten 14 Tage.
+    - Reel / Caption nur aus Hashtags: nicht eindeutig -> nur kurz nach einem Fehlversuch desselben Termins.
+    Gibt den Link (oder die Medien-ID) zurück, sonst None."""
+    eigene = _caption_norm(HASHTAG_RE.sub("", plan["caption"]))
+    if minuten is None:
+        if plan["typ"] == "karussell" and eigene:
+            minuten = 14 * 24 * 60
+        elif plan.get("termin") and st.get("fehlversuche", {}).get(plan["termin"], 0) > 0:
+            minuten = 180
+        else:
+            return None
+    try:
+        daten = ig("GET", f"{uid}/media", fields="id,caption,timestamp,permalink,media_type", limit=30).get("data", [])
+    except Exception as e:
+        print("Doppelpost-Prüfung nicht möglich:", e)
+        return None
+    ziel = _caption_norm(plan["caption"])
+    grenze = dt.datetime.now(dt.timezone.utc) - dt.timedelta(minutes=minuten)
+    typ_ok = ("CAROUSEL_ALBUM", "IMAGE") if plan["typ"] == "karussell" else ("VIDEO", "REELS")
+    for m in daten:
+        try:
+            zeit = dt.datetime.strptime(m["timestamp"], "%Y-%m-%dT%H:%M:%S%z")
+        except Exception:
+            continue
+        if zeit < grenze:
+            continue
+        if m.get("media_type") and m["media_type"] not in typ_ok:
+            continue
+        if _caption_norm(m.get("caption")) == ziel:
+            return m.get("permalink") or m["id"]
+    return None
+
+
 def _publish(plan):
     base = os.environ["PAGES_URL"].rstrip("/") + "/"
     st = load_status()
     user = ig("GET", "me", fields="user_id,username")
     uid = user["user_id"]
     print("Poste auf @" + user.get("username", "?"))
+    if not plan.get("test"):
+        link = schon_online(uid, plan, st)
+        if link:
+            print("Dieser Post ist schon online, wird NICHT nochmal gepostet:", link)
+            _als_gepostet(plan, st, link, hinweis="schon online")
+            return
     if plan["typ"] == "karussell":
         for b in plan["bilder"]:
             wait_url(base + b)
@@ -468,17 +515,36 @@ def _publish(plan):
             params["cover_url"] = base + plan["cover"]
         cid = ig("POST", f"{uid}/media", **params)["id"]
     wait_ready(cid)
-    media_id = ig("POST", f"{uid}/media_publish", creation_id=cid)["id"]
+    try:
+        media_id = ig("POST", f"{uid}/media_publish", creation_id=cid)["id"]
+    except Exception as fehler:
+        # Instagram meldet hier manchmal einen Fehler, obwohl der Post online gegangen ist.
+        print("Fehler beim Veröffentlichen, prüfe ob der Post trotzdem online ist:", fehler)
+        for _ in range(4):
+            time.sleep(20)
+            link = schon_online(uid, plan, st, minuten=30)
+            if link:
+                print("Post ist trotz Fehlermeldung online:", link)
+                _als_gepostet(plan, st, link)
+                return
+        raise
     print("Veröffentlicht, Medien-ID", media_id)
     try:
         link = ig("GET", media_id, fields="permalink").get("permalink", "")
     except Exception:
         link = ""
+    _als_gepostet(plan, st, link)
+
+
+def _als_gepostet(plan, st, link, hinweis=""):
     jetzt = dt.datetime.now(TZ)
     cap = " / ".join(l.strip() for l in plan["caption"].splitlines() if l.strip())
+    test = "ja" if plan.get("test") else ""
+    if hinweis:
+        test = (test + " " + hinweis).strip()
     write_csv(GEPOSTET_CSV, CSV_KOPF, [[jetzt.strftime("%d.%m.%Y"), jetzt.strftime("%H:%M"),
               "Reel" if plan["typ"] == "reel" else "Karussell", plan["art"], kurzname(plan["quelle"]),
-              cap[:120], link, "ja" if plan.get("test") else ""]], append=True)
+              cap[:120], link, test]], append=True)
 
     st["gepostet"].append(plan["quelle"])
     if plan.get("termin"):
