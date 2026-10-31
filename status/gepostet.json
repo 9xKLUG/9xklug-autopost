@@ -28,7 +28,8 @@
     "reels/wahr oder falsch/9x_KLUG_Reel_Die_Universitaet_Oxford_ist_aelter_als_d.mp4",
     "reels/Was verbindet sie/9x_KLUG_WasVerbindetSie_Dalmatiner_Schwan_Panda.mp4",
     "reels/Wissensfragen/9x_KLUG_Reel_Was_dauert_auf_der_Venus_laenger_ein_Tag.mp4",
-    "reels/Wer bin ich/9x_KLUG_WerBinIch_Albert_Einstein.mp4"
+    "reels/Wer bin ich/9x_KLUG_WerBinIch_Albert_Einstein.mp4",
+    "reels/Fun Fact/9x_KLUG_Reel_Das_Wasser_in_deinem_Glas_ist_alt.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -58,9 +59,10 @@
     "2026-10-29_10:30_reel",
     "2026-10-29_17:00_reel_extra_was verbindet sie",
     "2026-10-30_10:30_reel",
-    "2026-10-30_17:00_reel_extra_wer bin ich"
+    "2026-10-30_17:00_reel_extra_wer bin ich",
+    "2026-10-31_10:30_reel"
   ],
-  "letzter_reel_typ": "Wissensfragen",
+  "letzter_reel_typ": "Fun Fact",
   "token_erneuert": "2026-10-26",
   "verlauf": [
     {
@@ -264,6 +266,13 @@
       "typ": "reel",
       "art": "Wer bin ich",
       "quelle": "reels/Wer bin ich/9x_KLUG_WerBinIch_Albert_Einstein.mp4",
+      "test": false
+    },
+    {
+      "zeit": "2026-10-31T10:57+01:00",
+      "typ": "reel",
+      "art": "Fun Fact",
+      "quelle": "reels/Fun Fact/9x_KLUG_Reel_Das_Wasser_in_deinem_Glas_ist_alt.mp4",
       "test": false
     }
   ],
