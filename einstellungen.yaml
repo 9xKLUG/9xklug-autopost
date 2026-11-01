@@ -86,6 +86,12 @@ karussell_rhythmus:
 #    Zeile 2: ein Satz aus der Gruppe "aufforderung" (Gruppen siehe reel_caption unten).
 #             Welcher Satz, hängt fest am Reel: die Vorschau zeigt genau, was rausgeht.
 #    Danach:  Schlusssatz und hashtags.
+#
+#  Titelbild (seit 01.11.2026): titelbild_sekunde = Zeitpunkt im Video, an dem die Aufgabe
+#  komplett zu sehen ist, aber noch nichts von der Lösung. Daraus wird das Titelbild geschnitten
+#  (oberer Teil des Bildes, damit Logo und Überschrift im Profil-Raster sichtbar sind).
+#  Ohne titelbild_sekunde gilt die titelbild.png im Ordner. Klappt es nicht, ebenfalls
+#  titelbild.png + Mail. Neuer Typ: Zeitpunkt erst prüfen (Vorschau -> Download "titelbilder").
 #  Fehlt hook oder aufforderung, wird nur mit Hashtags gepostet und du bekommst eine Mail.
 #  Neuer Typ: ordner, hashtags, hook und aufforderung eintragen.
 # ------------------------------------------------------------
@@ -95,22 +101,27 @@ reel_rhythmus:
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
     hook: "Zwei Antworten, eine stimmt. Wetten, du tippst falsch?"
     aufforderung: wissen
+    titelbild_sekunde: 3
   - ordner: Ausreißer
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Eins passt nicht. Findest du es?"
     aufforderung: suchen
+    titelbild_sekunde: 3
   - ordner: optische täuschung
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Trau deinen Augen nicht."
     aufforderung: raten
+    titelbild_sekunde: 4
   - ordner: wahr oder falsch
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
     hook: "Wahr oder falsch? Entscheide dich, bevor die Auflösung kommt."
     aufforderung: wissen
+    titelbild_sekunde: 3
   - ordner: Wissensfragen
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
     hook: "Wetten, das weißt du nicht?"
     aufforderung: wissen
+    titelbild_sekunde: 4
 
 extra_termine:
   - typ: reel
@@ -120,6 +131,7 @@ extra_termine:
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #funfact"
     hook: "Klingt ausgedacht, ist aber wahr."
     aufforderung: wissen
+    titelbild_sekunde: 2
   - typ: reel
     ordner: Welches Jahr
     tage: [Di]
@@ -127,6 +139,7 @@ extra_termine:
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Das alles ist in einem einzigen Jahr passiert. Welches Jahr ist es?"
     aufforderung: raten
+    titelbild_sekunde: 5.9
   - typ: reel
     ordner: Suchsel
     tage: [Mi]
@@ -134,6 +147,7 @@ extra_termine:
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Findest du alle versteckten Wörter?"
     aufforderung: suchen
+    titelbild_sekunde: 5.5
   - typ: reel
     ordner: Was verbindet sie
     tage: [Do]
@@ -141,6 +155,7 @@ extra_termine:
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Was haben sie gemeinsam? Kommst du drauf?"
     aufforderung: raten
+    titelbild_sekunde: 4
   - typ: reel
     ordner: Wer bin ich
     tage: [Fr]
@@ -148,6 +163,7 @@ extra_termine:
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #werbinich"
     hook: "Drei Hinweise, eine Person aus der Geschichte. Wer bin ich?"
     aufforderung: raten
+    titelbild_sekunde: 6
 
 # Bausteine für die Reel-Captions (siehe Erklärung oben bei REELS).
 # Gruppen dürfen beliebig viele Sätze haben. Neue Gruppe: Namen + Sätze anhängen.

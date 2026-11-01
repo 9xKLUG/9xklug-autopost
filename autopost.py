@@ -335,6 +335,52 @@ def reel_caption(cfg, entry, video):
     return caption, " ".join(hinweise) or None
 
 
+# ---------------------------------------------------------------- Reel-Titelbild aus dem Video
+# Steht beim Reel-Typ "titelbild_sekunde", wird das Bild zu diesem Zeitpunkt aus dem Video geschnitten.
+# Das Profil-Raster zeigt nur den mittleren 3:4-Bereich (1080x1440) des Titelbilds. Damit Logo und
+# Überschrift (oben im Reel) sichtbar sind, wird der OBERE 3:4-Teil des Bildes genau dorthin gesetzt.
+# Klappt etwas nicht, gilt wie bisher die titelbild.png des Typs (+ Mail).
+def _ffmpeg():
+    exe = shutil.which("ffmpeg")
+    if exe:
+        return exe
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return None
+
+
+def titelbild_aus_video(video, sekunde, ziel):
+    """Baut das Titelbild nach ziel (JPG). Gibt None zurück, wenn alles geklappt hat, sonst den Grund."""
+    try:
+        sekunde = float(sekunde)
+    except (TypeError, ValueError):
+        return f"titelbild_sekunde '{sekunde}' ist keine Zahl"
+    if sekunde < 0:
+        return "titelbild_sekunde darf nicht negativ sein"
+    exe = _ffmpeg()
+    if not exe:
+        return "ffmpeg ist nicht verfügbar"
+    roh = Path(str(ziel) + ".roh.png")
+    r = subprocess.run([exe, "-loglevel", "error", "-y", "-ss", f"{sekunde:.2f}", "-i", str(video),
+                        "-frames:v", "1", str(roh)], capture_output=True)
+    if r.returncode != 0 or not roh.exists() or roh.stat().st_size == 0:
+        return f"kein Bild bei {sekunde:g} s (Video kürzer?)"
+    from PIL import Image
+    with Image.open(roh) as im:
+        img = im.convert("RGB")
+    roh.unlink()
+    w, h = img.size
+    if abs(h / w - 16 / 9) > 0.02:
+        return f"Video ist nicht im Format 9:16 ({w}x{h})"
+    img = img.resize((1080, 1920), Image.LANCZOS)
+    titel = Image.new("RGB", (1080, 1920), img.getpixel((8, 960)))  # Randfarbe des Reels
+    titel.paste(img.crop((0, 0, 1080, 1440)), (0, 240))
+    titel.save(ziel, "JPEG", quality=92)
+    return None
+
+
 def find_cover(video):
     pngs = [p for p in video.parent.iterdir() if p.suffix.lower() in IMG_EXT]
     for p in pngs:
@@ -390,12 +436,18 @@ def build(item_type, cfg, st, day, test=False, extra=None):
         cover = find_cover(video)
         hole_dateien([video] + ([cover] if cover else []))
         shutil.copy(video, SITE / vname)
-        cname = None
-        if cover:
+        cname, thinweis = None, None
+        if entry.get("titelbild_sekunde") is not None:
+            cname = f"{stamp}_cover.jpg"
+            grund = titelbild_aus_video(SITE / vname, entry["titelbild_sekunde"], SITE / cname)
+            if grund:
+                cname = None
+                thinweis = f"Titelbild aus dem Video für {rel(video)} nicht möglich ({grund}). titelbild.png verwendet."
+        if not cname and cover:
             cname = f"{stamp}_cover.jpg"
             to_jpeg(cover, SITE / cname, fit_feed=False)
         caption, chinweis = reel_caption(cfg, entry, video)
-        hinweis = " ".join(h for h in (hinweis, chinweis) if h) or None
+        hinweis = " ".join(h for h in (hinweis, thinweis, chinweis) if h) or None
         plan = {"typ": "reel", "art": entry["ordner"], "quelle": rel(video), "video": vname,
                 "cover": cname, "caption": caption}
     plan["test"] = test
@@ -661,6 +713,7 @@ def cmd_vorschau(days=14, ausgabe=True):
     wd = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
     lines = ["| Datum | Zeit | Typ | Art | Datei | Caption (Reels) |", "|---|---|---|---|---|---|"]
     rows = []
+    titel = []  # (Beschriftung, Typ-Eintrag, Video) für die Titelbild-Vorschau
     for d in range(days):
         day = start + dt.timedelta(days=d)
         slots = [dict(s, extra=None) for s in cfg["zeitplan"] if an_tag(s, day)]
@@ -689,6 +742,7 @@ def cmd_vorschau(days=14, ausgabe=True):
             cap = ""
             if item and slot["typ"] == "reel":
                 cap, _ = _caption_sicher(cfg, e, item)
+                titel.append((f"{wd[day.weekday()]} {day:%d.%m.} {slot['zeit']}", e, item))
             lines.append(f"| {wd[day.weekday()]} {day:%d.%m.} | {slot['zeit']} | {slot['typ']} | {art} | {datei} | "
                          f"{' / '.join(l for l in cap.splitlines() if l.strip())} |")
             rows.append([day.strftime("%d.%m.%Y"), wd[day.weekday()], slot["zeit"],
@@ -706,6 +760,10 @@ def cmd_vorschau(days=14, ausgabe=True):
     if not ausgabe:
         return
     caption_liste(cfg, st)
+    try:
+        titelbild_vorschau(titel)
+    except Exception as fehler:
+        print("Titelbild-Vorschau nicht möglich:", fehler)
     print(text)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
@@ -722,6 +780,59 @@ def _caption_sicher(cfg, entry, video):
 
 
 CAPTIONS_CSV = ROOT / "status" / "captions_reels.csv"
+TITEL_DIR = ROOT / "_titelbilder"  # wird bei GitHub als Download "titelbilder" am Lauf angehängt
+
+
+def titelbild_vorschau(titel):
+    """Erzeugt die Titelbilder der geplanten Reels genau so, wie sie gepostet würden,
+    plus eine Übersicht (so sieht es im Profil-Raster aus). Fehler hier stoppen nie die Vorschau."""
+    from PIL import Image, ImageDraw
+    if TITEL_DIR.exists():
+        shutil.rmtree(TITEL_DIR)
+    TITEL_DIR.mkdir()
+    kacheln = []
+    for nr, (wann, e, video) in enumerate(titel, 1):
+        ziel = TITEL_DIR / f"{nr:02d}.jpg"
+        quelle = "titelbild.png"
+        try:
+            grund = "keine titelbild_sekunde"
+            if e.get("titelbild_sekunde") is not None:
+                hole_dateien([video])
+                grund = titelbild_aus_video(video, e["titelbild_sekunde"], ziel)
+                if MEDIA_ROOT != ROOT:
+                    video.write_bytes(b"")  # Platz sparen: Video wieder leeren
+            if grund:
+                cover = find_cover(video)
+                if not cover:
+                    kacheln.append((wann, e["ordner"], "kein Titelbild", None))
+                    continue
+                hole_dateien([cover])
+                to_jpeg(cover, ziel, fit_feed=False)
+            else:
+                quelle = f"aus Video ({e['titelbild_sekunde']} s)"
+            with Image.open(ziel) as im:
+                kacheln.append((wann, e["ordner"], quelle, im.convert("RGB").crop((0, 240, 1080, 1680)).resize((270, 360))))
+        except Exception as fehler:
+            kacheln.append((wann, e["ordner"], f"Fehler: {fehler}"[:60], None))
+    if not kacheln:
+        return
+    spalten = 3
+    zeilen = (len(kacheln) + spalten - 1) // spalten
+    blatt = Image.new("RGB", (spalten * 280, zeilen * 410), "white")
+    d = ImageDraw.Draw(blatt)
+    try:  # Schrift mit Umlauten (bei GitHub vorhanden), sonst Standardschrift
+        from PIL import ImageFont
+        schrift = ImageFont.truetype("DejaVuSans.ttf", 13)
+    except Exception:
+        schrift = None
+    for i, (wann, typ, quelle, bild) in enumerate(kacheln):
+        x, y = (i % spalten) * 280, (i // spalten) * 410
+        if bild:
+            blatt.paste(bild, (x + 5, y + 45))
+        d.text((x + 5, y + 5), f"{wann}  {typ}", fill="black", font=schrift)
+        d.text((x + 5, y + 22), quelle, fill="gray", font=schrift)
+    blatt.save(TITEL_DIR / "00_Uebersicht_Raster.jpg", "JPEG", quality=88)
+    print(f"Titelbild-Vorschau: {len(kacheln)} Bilder -> Download 'titelbilder' am Lauf")
 
 
 def caption_liste(cfg, st):
