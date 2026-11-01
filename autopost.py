@@ -5,8 +5,11 @@ Befehle:
   python autopost.py prepare [--test reel|karussell]  -> legt fällige Medien in _site/ ab
   python autopost.py publish                          -> veröffentlicht, was prepare vorbereitet hat
   python autopost.py vorschau [tage]                  -> zeigt, was in den nächsten Tagen gepostet wird
+                                                         (inkl. Caption) und schreibt die Caption-Liste
+                                                         aller Reels im Vorrat (status/captions_reels.csv)
 """
 import datetime as dt
+import hashlib
 import json
 import os
 import re
@@ -257,6 +260,81 @@ def caption_text(post_dir):
     return ""
 
 
+# ---------------------------------------------------------------- Reel-Caption
+# Aufbau (Texte stehen alle in einstellungen.yaml, nichts wird aus Dateinamen erraten):
+#   Zeile 1: Hook. Liegt neben dem Video eine gleichnamige .txt, kommt deren Text.
+#            Sonst der feste Text des Typs (hook).
+#   Zeile 2: Aufforderung aus der Gruppe des Typs (aufforderung). Welcher Satz der Gruppe,
+#            hängt fest am Dateinamen: gleiches Reel = immer gleicher Satz (Vorschau = echter Post).
+#   Danach:  Schlusssatz (reel_caption -> schluss) und die Hashtags des Typs.
+# Fehlt hook oder Aufforderung für einen Typ, wird wie früher nur mit Hashtags gepostet
+# und es kommt eine Hinweis-Mail.
+CAPTION_MAX = 2200  # Instagram-Grenze für Captions
+
+
+def lies_text(p):
+    """Liest eine kleine Textdatei (UTF-8 oder Windows-Umlaute). Im Spar-Modus wird sie vorher geholt,
+    sonst wäre sie nur ein leerer Platzhalter."""
+    hole_dateien([p])
+    raw = p.read_bytes()
+    for enc in ("utf-8-sig", "cp1252"):
+        try:
+            return raw.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return ""
+
+
+def begleittext(video):
+    """Text aus der .txt mit gleichem Namen wie das Video. Gibt (text, datei) zurück, sonst (None, None)."""
+    for p in video.parent.iterdir():
+        if p.suffix.lower() == ".txt" and norm(p.stem) == norm(video.stem):
+            return " ".join(lies_text(p).split()) or None, p
+    return None, None
+
+
+def reel_caption(cfg, entry, video):
+    """Baut die Caption für ein Reel. Gibt (caption, hinweis) zurück."""
+    hashtags = str(entry.get("hashtags") or "").strip()
+    typ = entry.get("name", entry["ordner"])
+    rc = cfg.get("reel_caption") or {}
+    gruppe = str(entry.get("aufforderung") or "").strip()
+    saetze = [str(s).strip() for s in ((rc.get("aufforderungen") or {}).get(gruppe) or []) if str(s or "").strip()]
+    hook = str(entry.get("hook") or "").strip()
+    hinweise = []
+
+    txt, datei = begleittext(video)
+    if datei and not txt:
+        hinweise.append(f"Textdatei {rel(datei)} ist leer, fester Text des Typs verwendet.")
+    if txt:
+        hook = txt
+
+    fehlt = []
+    if not hook:
+        fehlt.append("hook")
+    if not gruppe:
+        fehlt.append("aufforderung")
+    elif not saetze:
+        fehlt.append(f"Aufforderungs-Gruppe '{gruppe}' unter reel_caption")
+    if fehlt:
+        hinweise.append(f"Reel-Typ '{typ}': {', '.join(fehlt)} fehlt in einstellungen.yaml. "
+                        "Reel wird nur mit Hashtags gepostet.")
+        return hashtags, " ".join(hinweise)
+
+    nr = int(hashlib.md5(norm(video.name).encode("utf-8")).hexdigest(), 16)
+    teile = [hook + "\n" + saetze[nr % len(saetze)]]
+    if str(rc.get("schluss") or "").strip():
+        teile.append(str(rc["schluss"]).strip())
+    if hashtags:
+        teile.append(hashtags)
+    caption = "\n\n".join(teile)
+    if len(caption) > CAPTION_MAX:
+        hinweise.append(f"Caption für {rel(video)} ist länger als {CAPTION_MAX} Zeichen. "
+                        "Reel wird nur mit Hashtags gepostet.")
+        return hashtags, " ".join(hinweise)
+    return caption, " ".join(hinweise) or None
+
+
 def find_cover(video):
     pngs = [p for p in video.parent.iterdir() if p.suffix.lower() in IMG_EXT]
     for p in pngs:
@@ -316,8 +394,10 @@ def build(item_type, cfg, st, day, test=False, extra=None):
         if cover:
             cname = f"{stamp}_cover.jpg"
             to_jpeg(cover, SITE / cname, fit_feed=False)
+        caption, chinweis = reel_caption(cfg, entry, video)
+        hinweis = " ".join(h for h in (hinweis, chinweis) if h) or None
         plan = {"typ": "reel", "art": entry["ordner"], "quelle": rel(video), "video": vname,
-                "cover": cname, "caption": entry.get("hashtags", "")}
+                "cover": cname, "caption": caption}
     plan["test"] = test
     plan["extra"] = bool(extra)
     return plan, hinweis
@@ -579,7 +659,7 @@ def cmd_vorschau(days=14, ausgabe=True):
     last = st.get("letzter_reel_typ")
     last_k = letzte_karussell_art(st)
     wd = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
-    lines = ["| Datum | Zeit | Typ | Art | Datei |", "|---|---|---|---|---|"]
+    lines = ["| Datum | Zeit | Typ | Art | Datei | Caption (Reels) |", "|---|---|---|---|---|---|"]
     rows = []
     for d in range(days):
         day = start + dt.timedelta(days=d)
@@ -606,9 +686,13 @@ def cmd_vorschau(days=14, ausgabe=True):
                     rpool[norm(e["ordner"])].remove(item)
                     last = e["ordner"]
             datei = kurzname(rel(item)) if item else "KEIN VORRAT"
-            lines.append(f"| {wd[day.weekday()]} {day:%d.%m.} | {slot['zeit']} | {slot['typ']} | {art} | {datei} |")
+            cap = ""
+            if item and slot["typ"] == "reel":
+                cap, _ = _caption_sicher(cfg, e, item)
+            lines.append(f"| {wd[day.weekday()]} {day:%d.%m.} | {slot['zeit']} | {slot['typ']} | {art} | {datei} | "
+                         f"{' / '.join(l for l in cap.splitlines() if l.strip())} |")
             rows.append([day.strftime("%d.%m.%Y"), wd[day.weekday()], slot["zeit"],
-                         "Reel" if slot["typ"] == "reel" else "Karussell", art, datei])
+                         "Reel" if slot["typ"] == "reel" else "Karussell", art, datei, cap])
     vorrat = ["", "**Vorrat Karussells:** " + ", ".join(
         f"{e['name']}: {len(karussell_posts(cfg, st)[norm(e['ordner'])])}" for e in cfg["karussell_rhythmus"])]
     vorrat.append("**Vorrat Reels:** " + ", ".join(
@@ -617,15 +701,40 @@ def cmd_vorschau(days=14, ausgabe=True):
         vorrat.append("**Vorrat Zusatztermine:** " + ", ".join(
             f"{e.get('name', e['ordner'])}: {len((karussell_posts if e['typ'] == 'karussell' else reel_files)(cfg, st, [e])[norm(e['ordner'])])}"
             for e in extras))
-    write_csv(GEPLANT_CSV, ["Datum", "Tag", "Uhrzeit", "Typ", "Art", "Datei/Ordner"], rows)
+    write_csv(GEPLANT_CSV, ["Datum", "Tag", "Uhrzeit", "Typ", "Art", "Datei/Ordner", "Caption (Reels)"], rows)
     text = "\n".join(lines + vorrat)
     if not ausgabe:
         return
+    caption_liste(cfg, st)
     print(text)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
         with open(summary, "a", encoding="utf-8") as f:
             f.write("## Vorschau\n\n" + text + "\n")
+
+
+def _caption_sicher(cfg, entry, video):
+    """Wie reel_caption, aber ein Lesefehler stoppt nie die Vorschau (nur Anzeige)."""
+    try:
+        return reel_caption(cfg, entry, video)
+    except Exception as fehler:
+        return "(Caption konnte nicht gelesen werden)", f"Fehler: {fehler}"
+
+
+CAPTIONS_CSV = ROOT / "status" / "captions_reels.csv"
+
+
+def caption_liste(cfg, st):
+    """Schreibt für jedes noch nicht gepostete Reel genau die Caption, mit der es rausgehen würde."""
+    eintraege = list(cfg.get("reel_rhythmus") or []) + [e for e in extra_termine(cfg) if e.get("typ") == "reel"]
+    rows = []
+    for e in eintraege:
+        for v in reel_files(cfg, st, [e])[norm(e["ordner"])]:
+            cap, hinweis = _caption_sicher(cfg, e, v)
+            txt, _ = begleittext(v)
+            rows.append([e["ordner"], kurzname(rel(v)), "Textdatei" if txt else "fester Text", cap, hinweis or ""])
+    write_csv(CAPTIONS_CSV, ["Typ", "Datei", "Zeile 1 aus", "Caption", "Hinweis"], rows)
+    print(f"Caption-Liste: {len(rows)} Reels -> status/captions_reels.csv")
 
 
 if __name__ == "__main__":

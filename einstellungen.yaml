@@ -78,43 +78,88 @@ karussell_rhythmus:
 #  Reihenfolge reihum, nie zwei Tage hintereinander derselbe Typ.
 #  ordner = Name des Unterordners im Ordner "reels"
 #  Neue Typen einfach unten anhängen.
+#
+#  Caption eines Reels (seit 01.11.2026):
+#    Zeile 1: hook = fester Text des Typs. Er muss für JEDES Reel des Typs stimmen.
+#             Liegt neben einem Video eine Textdatei mit genau gleichem Namen
+#             (z. B. Video.mp4 + Video.txt), kommt stattdessen deren Text.
+#    Zeile 2: ein Satz aus der Gruppe "aufforderung" (Gruppen siehe reel_caption unten).
+#             Welcher Satz, hängt fest am Reel: die Vorschau zeigt genau, was rausgeht.
+#    Danach:  Schlusssatz und hashtags.
+#  Fehlt hook oder aufforderung, wird nur mit Hashtags gepostet und du bekommst eine Mail.
+#  Neuer Typ: ordner, hashtags, hook und aufforderung eintragen.
 # ------------------------------------------------------------
 #  Fun Fact läuft seit 31.10.2026 nicht mehr in der Reihe, sondern fest Mo + So 14:30 (siehe extra_termine).
 reel_rhythmus:
   - ordner: Entweder oder
-    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
+    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
+    hook: "Zwei Antworten, eine stimmt. Wetten, du tippst falsch?"
+    aufforderung: wissen
   - ordner: Ausreißer
-    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
+    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
+    hook: "Eins passt nicht. Findest du es?"
+    aufforderung: suchen
   - ordner: optische täuschung
-    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
+    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
+    hook: "Trau deinen Augen nicht."
+    aufforderung: raten
   - ordner: wahr oder falsch
-    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
+    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
+    hook: "Wahr oder falsch? Entscheide dich, bevor die Auflösung kommt."
+    aufforderung: wissen
   - ordner: Wissensfragen
-    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
+    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
+    hook: "Wetten, das weißt du nicht?"
+    aufforderung: wissen
 
 extra_termine:
   - typ: reel
     ordner: Fun Fact
     tage: [Mo, So]
     zeit: "14:30"
-    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #funfact #unnützeswissen"
+    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #funfact"
+    hook: "Klingt ausgedacht, ist aber wahr."
+    aufforderung: wissen
   - typ: reel
     ordner: Welches Jahr
     tage: [Di]
     zeit: "17:00"
-    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
+    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
+    hook: "Das alles ist in einem einzigen Jahr passiert. Welches Jahr ist es?"
+    aufforderung: raten
   - typ: reel
     ordner: Suchsel
     tage: [Mi]
     zeit: "17:00"
-    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging"
+    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
+    hook: "Findest du alle versteckten Wörter?"
+    aufforderung: suchen
   - typ: reel
     ordner: Was verbindet sie
     tage: [Do]
     zeit: "17:00"
-    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #werbinich"
+    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
+    hook: "Was haben sie gemeinsam? Kommst du drauf?"
+    aufforderung: raten
   - typ: reel
     ordner: Wer bin ich
     tage: [Fr]
     zeit: "17:00"
-    hashtags: "#rätsel #Denksport #rätselspaß #knobeln #gehirnjogging #werbinich"
+    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #werbinich"
+    hook: "Drei Hinweise, eine Person aus der Geschichte. Wer bin ich?"
+    aufforderung: raten
+
+# Bausteine für die Reel-Captions (siehe Erklärung oben bei REELS).
+# Gruppen dürfen beliebig viele Sätze haben. Neue Gruppe: Namen + Sätze anhängen.
+reel_caption:
+  schluss: "Täglich neue Rätsel, Denkfallen und verblüffendes Wissen für Erwachsene."
+  aufforderungen:
+    wissen:
+      - "Hast du's gewusst? Ja oder Nein in die Kommentare."
+      - "Schick das jemandem, der das garantiert nicht wusste."
+    suchen:
+      - "Wie lange hast du gebraucht? Ehrlich in die Kommentare."
+      - "Schick das jemandem, der länger braucht."
+    raten:
+      - "Schreib deinen Tipp in die Kommentare, bevor die Auflösung kommt."
+      - "Schick das jemandem, der sich für schlau hält."
