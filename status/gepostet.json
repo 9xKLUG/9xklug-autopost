@@ -334,5 +334,12 @@
     "2026-10-20_07:45_reel": 3,
     "2026-10-31_14:30_karussell": 3
   },
-  "letzte_karussell_art": "< > Gitter"
+  "letzte_karussell_art": "< > Gitter",
+  "youtube_tests": [
+    {
+      "zeit": "2026-11-03T19:08+01:00",
+      "quelle": "reels/Welches Jahr/9x_KLUG_WelchesJahr_1936.mp4",
+      "id": "MILmMfEdDhA"
+    }
+  ]
 }
