@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""9x KLUG Autopost: postet Karussells und Reels automatisch auf Instagram.
+"""9x KLUG Autopost: postet Karussells und Reels automatisch auf Instagram
+und lädt die Reels zusätzlich als YouTube Shorts hoch (seit 03.11.2026, Schalter youtube -> aktiv).
 
 Befehle:
   python autopost.py prepare [--test reel|karussell]  -> legt fällige Medien in _site/ ab
   python autopost.py publish                          -> veröffentlicht, was prepare vorbereitet hat
+  python autopost.py youtube                          -> lädt das eben auf Instagram gepostete Reel zu YouTube hoch
+  python autopost.py youtube-test                     -> lädt das zuletzt gepostete Reel PRIVAT zu YouTube hoch (Test)
+  python autopost.py youtube-nachholen <datei>        -> lädt ein Reel nach, dessen YouTube-Upload fehlte
   python autopost.py vorschau [tage]                  -> zeigt, was in den nächsten Tagen gepostet wird
                                                          (inkl. Caption) und schreibt die Caption-Liste
                                                          aller Reels im Vorrat (status/captions_reels.csv)
@@ -104,7 +108,43 @@ def save_status(st):
 
 GEPOSTET_CSV = ROOT / "status" / "gepostet.csv"
 GEPLANT_CSV = ROOT / "status" / "geplant.csv"
-CSV_KOPF = ["Datum", "Uhrzeit", "Typ", "Art", "Datei/Ordner", "Caption-Anfang", "Instagram-Link", "Test"]
+CSV_KOPF = ["Datum", "Uhrzeit", "Typ", "Art", "Datei/Ordner", "Caption-Anfang", "Instagram-Link", "Test", "YouTube"]
+
+
+def _csv_lesen(path):
+    import csv
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        return list(csv.reader(f, delimiter=";"))
+
+
+def _csv_kopf_aktualisieren():
+    """Ältere gepostet.csv (ohne Spalte YouTube) einmalig um die Spalte ergänzen."""
+    if not GEPOSTET_CSV.exists():
+        return
+    zeilen = _csv_lesen(GEPOSTET_CSV)
+    if not zeilen or "YouTube" in zeilen[0]:
+        return
+    breite = len(zeilen[0])
+    rows = [z + [""] * (breite - len(z)) + [""] for z in zeilen[1:]]
+    write_csv(GEPOSTET_CSV, CSV_KOPF, rows)
+
+
+def csv_youtube_eintragen(quelle, wert):
+    """Trägt in gepostet.csv beim (letzten) Instagram-Eintrag dieses Reels den YouTube-Stand ein."""
+    if not GEPOSTET_CSV.exists():
+        return
+    _csv_kopf_aktualisieren()
+    zeilen = _csv_lesen(GEPOSTET_CSV)
+    kopf = zeilen[0]
+    i_typ, i_datei, i_test, i_yt = (kopf.index(k) for k in ("Typ", "Datei/Ordner", "Test", "YouTube"))
+    for z in reversed(zeilen[1:]):
+        z += [""] * (len(kopf) - len(z))
+        if z[i_typ] == "Reel" and z[i_datei] == kurzname(quelle) and not z[i_test].startswith("ja"):
+            z[i_yt] = wert
+            break
+    else:
+        return
+    write_csv(GEPOSTET_CSV, kopf, zeilen[1:])
 
 
 def write_csv(path, header, rows, append=False):
@@ -674,9 +714,12 @@ def _als_gepostet(plan, st, link, hinweis=""):
     test = "ja" if plan.get("test") else ""
     if hinweis:
         test = (test + " " + hinweis).strip()
+    # YouTube-Spalte: Karussells gehen nie zu YouTube ("–"), Reels trägt der YouTube-Schritt danach ein.
+    yt = "–" if plan["typ"] == "karussell" or plan.get("test") else ""
+    _csv_kopf_aktualisieren()
     write_csv(GEPOSTET_CSV, CSV_KOPF, [[jetzt.strftime("%d.%m.%Y"), jetzt.strftime("%H:%M"),
               "Reel" if plan["typ"] == "reel" else "Karussell", plan["art"], kurzname(plan["quelle"]),
-              cap[:120], link, test]], append=True)
+              cap[:120], link, test, yt]], append=True)
 
     st["gepostet"].append(plan["quelle"])
     if plan.get("termin"):
@@ -694,6 +737,351 @@ def _als_gepostet(plan, st, link, hinweis=""):
     finally:
         save_status(st)
     cmd_vorschau(14, ausgabe=False)
+
+
+# ---------------------------------------------------------------- YouTube Shorts
+# Regeln (Konzept vom 03.11.2026, Details in einstellungen.yaml unter "youtube"):
+# - YouTube hängt an Instagram: Jedes Reel, das auf Instagram gepostet wurde, wird danach zu YouTube
+#   hochgeladen. Karussells und Testposts nie. Ein YouTube-Fehler stoppt nie Instagram.
+# - Solange youtube -> aktiv: false, wird nichts automatisch hochgeladen (Uploads über ein ungeprüftes
+#   Google-Projekt wären dauerhaft "gesperrt als privat").
+# - Titel = Zeile 1 der Reel-Caption (Text der .txt, sonst fester hook). Über 100 Zeichen: fester hook.
+#   Nie abschneiden. Beschreibung = youtube_text des Typs + Schlusssatz.
+# - Doppel-Schutz: Jedes Reel wird höchstens einmal hochgeladen (status/gepostet.json -> youtube).
+#   Vor dem Upload steht dort "unklar". Nur ein eindeutig abgelehnter Upload wird (im selben Lauf,
+#   höchstens 3-mal) wiederholt. Ist unklar, ob das Video angekommen ist: kein neuer Versuch + Mail.
+YT_TOKEN_URL = "https://oauth2.googleapis.com/token"
+YT_UPLOAD_URL = "https://www.googleapis.com/upload/youtube/v3/videos"
+YT_TITEL_MAX = 100
+YT_BESCHREIBUNG_MAX = 4900  # YouTube-Grenze 5000 Bytes, mit Puffer
+YT_VERSUCHE = 3
+YT_SCHLUESSEL_HILFE = (
+    "So erneuerst du den YouTube-Schlüssel: developers.google.com/oauthplayground öffnen -> Zahnrad -> "
+    "'Use your own OAuth credentials' mit Client-ID und Clientschlüssel aus deiner JSON-Datei -> Scope "
+    "https://www.googleapis.com/auth/youtube.upload -> Authorize APIs (Konto kontakt.niaki, Kanal 9x KLUG) -> "
+    "Exchange authorization code for tokens -> Refresh token kopieren -> bei GitHub das Secret "
+    "YT_REFRESH_TOKEN ersetzen.")
+
+
+class YtFehler(Exception):
+    """klar=True: YouTube hat eindeutig abgelehnt, es gibt sicher kein Video (Wiederholen ist sicher).
+    klar=False: unklar, ob das Video angekommen ist (nicht wiederholen). schluessel=True: Schlüssel ungültig."""
+
+    def __init__(self, text, klar=True, schluessel=False):
+        super().__init__(text)
+        self.klar = klar
+        self.schluessel = schluessel
+
+
+def yt_cfg(cfg):
+    return cfg.get("youtube") or {}
+
+
+def yt_eintrag(cfg, art):
+    """Der Reel-Typ (aus reel_rhythmus oder extra_termine) mit diesem Ordnernamen."""
+    for e in list(cfg.get("reel_rhythmus") or []) + [x for x in extra_termine(cfg) if x.get("typ") == "reel"]:
+        if norm(e["ordner"]) == norm(art):
+            return e
+    return None
+
+
+def _yt_sauber(text):
+    """YouTube verbietet < und > in Titel und Beschreibung."""
+    return str(text or "").replace("<", "").replace(">", "").strip()
+
+
+def yt_texte(cfg, entry, video):
+    """Gibt (titel, beschreibung, hinweis) zurück. titel ist None, wenn kein gültiger Titel möglich ist."""
+    yc = yt_cfg(cfg)
+    hinweise = []
+    fest = " ".join(_yt_sauber(entry.get("hook")).split())
+    txt, _ = begleittext(video)
+    titel = " ".join(_yt_sauber(txt).split()) if txt else fest
+    if len(titel) > YT_TITEL_MAX:
+        hinweise.append(f"Titel aus der Textdatei ist länger als {YT_TITEL_MAX} Zeichen, fester hook des Typs verwendet.")
+        titel = fest
+    if not titel or len(titel) > YT_TITEL_MAX:
+        return None, "", f"Kein gültiger YouTube-Titel für {rel(video)} (hook fehlt oder ist länger als {YT_TITEL_MAX} Zeichen)."
+    teile = []
+    eigen = _yt_sauber(entry.get("youtube_text"))
+    if eigen:
+        teile.append(eigen)
+    else:
+        hinweise.append(f"Reel-Typ '{entry['ordner']}' hat keinen youtube_text in einstellungen.yaml, nur Schlusssatz verwendet.")
+    if _yt_sauber(yc.get("schluss")):
+        teile.append(_yt_sauber(yc["schluss"]))
+    if yc.get("hashtags_anhaengen") and str(entry.get("hashtags") or "").strip():
+        teile.append(_yt_sauber(entry["hashtags"]))
+    if yc.get("impressum_zeile") and _yt_sauber(yc.get("impressum_url")):
+        teile.append("Impressum: " + _yt_sauber(yc["impressum_url"]))
+    beschreibung = "\n\n".join(teile)
+    if len(beschreibung.encode("utf-8")) > YT_BESCHREIBUNG_MAX:
+        hinweise.append("YouTube-Beschreibung zu lang, nur Schlusssatz verwendet.")
+        beschreibung = _yt_sauber(yc.get("schluss"))
+    return titel, beschreibung, " ".join(hinweise) or None
+
+
+def _yt_texte_sicher(cfg, entry, video):
+    try:
+        return yt_texte(cfg, entry, video)
+    except Exception as fehler:
+        return None, "", f"Fehler: {fehler}"
+
+
+def yt_token():
+    import requests
+    try:
+        r = requests.post(YT_TOKEN_URL, data={"client_id": os.environ.get("YT_CLIENT_ID", ""),
+                                              "client_secret": os.environ.get("YT_CLIENT_SECRET", ""),
+                                              "refresh_token": os.environ.get("YT_REFRESH_TOKEN", ""),
+                                              "grant_type": "refresh_token"}, timeout=60)
+        data = r.json()
+    except Exception as fehler:
+        raise YtFehler(f"Anmeldung bei Google nicht möglich: {fehler}")
+    if "access_token" in data:
+        return data["access_token"]
+    if data.get("error") in ("invalid_grant", "invalid_client", "unauthorized_client"):
+        raise YtFehler(f"YouTube-Schlüssel ungültig oder abgelaufen ({data.get('error')}).", schluessel=True)
+    raise YtFehler(f"Anmeldung bei Google abgelehnt: {data}")
+
+
+def _yt_stand(session_url, groesse, token):
+    """Fragt bei YouTube nach, wie weit der Upload ist. ('fertig', id) / ('weiter', ab_byte) / None (unklar)."""
+    import requests
+    try:
+        r = requests.put(session_url, headers={"Authorization": "Bearer " + token, "Content-Length": "0",
+                                               "Content-Range": f"bytes */{groesse}"}, timeout=60)
+    except Exception:
+        return None
+    if r.status_code in (200, 201):
+        try:
+            return "fertig", r.json()["id"]
+        except Exception:
+            return None
+    if r.status_code == 308:
+        bereich = r.headers.get("Range", "")
+        m = re.match(r"bytes=0-(\d+)", bereich)
+        return "weiter", (int(m.group(1)) + 1) if m else 0
+    if r.status_code in (404, 410):
+        return "abgelaufen", None  # Sitzung verfallen, Upload nicht abgeschlossen -> kein Video
+    return None
+
+
+def yt_hochladen(video, titel, beschreibung, yc, privat=False):
+    """Lädt das Video hoch (fortsetzbarer Upload) und gibt die Video-ID zurück. Wirft YtFehler."""
+    import requests
+    token = yt_token()
+    meta = {
+        "snippet": {"title": titel, "description": beschreibung,
+                    "categoryId": str(yc.get("kategorie", 24)),
+                    "defaultLanguage": str(yc.get("sprache", "de")),
+                    "defaultAudioLanguage": str(yc.get("sprache", "de"))},
+        "status": {"privacyStatus": "private" if privat else str(yc.get("sichtbarkeit", "public")),
+                   "selfDeclaredMadeForKids": bool(yc.get("fuer_kinder", False)),
+                   "containsSyntheticMedia": bool(yc.get("ki_inhalt", False))},
+    }
+    daten = video.read_bytes()
+    groesse = len(daten)
+    if not groesse:
+        raise YtFehler(f"Video {rel(video)} ist leer.")
+    try:
+        r = requests.post(YT_UPLOAD_URL, params={"uploadType": "resumable", "part": "snippet,status",
+                                                 "notifySubscribers": "true" if yc.get("abonnenten_benachrichtigen", True) else "false"},
+                          headers={"Authorization": "Bearer " + token, "Content-Type": "application/json; charset=UTF-8",
+                                   "X-Upload-Content-Type": "video/mp4", "X-Upload-Content-Length": str(groesse)},
+                          data=json.dumps(meta).encode("utf-8"), timeout=60)
+    except Exception as fehler:
+        raise YtFehler(f"Upload-Start nicht möglich: {fehler}")  # ohne Sitzung gibt es kein Video
+    if r.status_code != 200 or not r.headers.get("Location"):
+        raise YtFehler(f"YouTube hat den Upload abgelehnt ({r.status_code}): {r.text[:400]}")
+    session_url = r.headers["Location"]
+    ab = 0
+    for _ in range(5):
+        try:
+            kopf = {"Authorization": "Bearer " + token, "Content-Length": str(groesse - ab)}
+            if ab:
+                kopf["Content-Range"] = f"bytes {ab}-{groesse - 1}/{groesse}"
+            else:
+                kopf["Content-Type"] = "video/mp4"
+            r = requests.put(session_url, headers=kopf, data=daten[ab:], timeout=900)
+            if r.status_code in (200, 201):
+                return r.json()["id"]
+            if 400 <= r.status_code < 500 and r.status_code not in (408, 429):
+                raise YtFehler(f"YouTube hat das Video abgelehnt ({r.status_code}): {r.text[:400]}")
+        except YtFehler:
+            raise
+        except Exception as fehler:
+            print("Verbindung beim Upload unterbrochen, frage Stand ab:", fehler)
+        time.sleep(20)
+        stand = _yt_stand(session_url, groesse, token)
+        if stand and stand[0] == "fertig":
+            return stand[1]
+        if stand and stand[0] == "weiter":
+            ab = stand[1]
+            continue
+        if stand and stand[0] == "abgelaufen":
+            raise YtFehler("Upload-Sitzung abgelaufen, Video wurde nicht angelegt.")
+    raise YtFehler("Nicht sicher, ob das Video bei YouTube angekommen ist.", klar=False)
+
+
+def yt_link(video_id):
+    return f"https://youtube.com/shorts/{video_id}"
+
+
+def _yt_versuchen(cfg, st, quelle, art):
+    """Lädt ein auf Instagram gepostetes Reel zu YouTube hoch, mit Doppel-Schutz. Speichert den Status."""
+    yts = st.setdefault("youtube", {})
+    if (yts.get(quelle) or {}).get("status") == "ok":
+        print("Schon auf YouTube, wird nicht nochmal hochgeladen:", quelle)
+        return True
+    entry = yt_eintrag(cfg, art)
+    video = MEDIA_ROOT / quelle
+    name = kurzname(quelle)
+    if not entry:
+        grund = f"Reel-Typ '{art}' nicht in einstellungen.yaml gefunden"
+        yts[quelle] = {"status": "fehlgeschlagen", "grund": grund, "zeit": dt.datetime.now(TZ).isoformat(timespec="minutes")}
+        save_status(st)
+        csv_youtube_eintragen(quelle, "fehlgeschlagen (nachholen möglich)")
+        warnung(f"YouTube: Upload für {name} nicht möglich ({grund}).")
+        return False
+    titel, beschreibung, hinweis = yt_texte(cfg, entry, video)
+    if hinweis:
+        warnung("YouTube: " + hinweis)
+    if not titel:
+        yts[quelle] = {"status": "fehlgeschlagen", "grund": "kein gültiger Titel", "zeit": dt.datetime.now(TZ).isoformat(timespec="minutes")}
+        save_status(st)
+        csv_youtube_eintragen(quelle, "fehlgeschlagen (nachholen möglich)")
+        return False
+    hole_dateien([video])
+    # Erst "unklar" speichern: bricht der Lauf mittendrin ab, wird nie automatisch nochmal hochgeladen.
+    yts[quelle] = {"status": "unklar", "zeit": dt.datetime.now(TZ).isoformat(timespec="minutes")}
+    save_status(st)
+    csv_youtube_eintragen(quelle, "unklar: bitte im YouTube Studio prüfen")
+    fehler = None
+    for versuch in range(1, YT_VERSUCHE + 1):
+        try:
+            vid = yt_hochladen(video, titel, beschreibung, yt_cfg(cfg))
+            yts[quelle] = {"status": "ok", "id": vid, "titel": titel,
+                           "zeit": dt.datetime.now(TZ).isoformat(timespec="minutes")}
+            save_status(st)
+            csv_youtube_eintragen(quelle, yt_link(vid))
+            print("Auf YouTube hochgeladen:", yt_link(vid))
+            return True
+        except YtFehler as f:
+            fehler = f
+            print(f"YouTube-Versuch {versuch} fehlgeschlagen:", f)
+            if not f.klar or f.schluessel:
+                break
+            if versuch < YT_VERSUCHE:
+                time.sleep(60)
+    jetzt = dt.datetime.now(TZ).isoformat(timespec="minutes")
+    if not fehler.klar:
+        yts[quelle] = {"status": "unklar", "grund": str(fehler), "zeit": jetzt}
+        save_status(st)
+        warnung(f"YouTube: Upload von {name} unklar. Bitte im YouTube Studio nachschauen, ob das Short da ist. "
+                f"Falls nicht: Actions -> Run workflow -> youtube-nachholen -> Datei {name}. Grund: {fehler}")
+        return False
+    yts[quelle] = {"status": "fehlgeschlagen", "grund": str(fehler), "zeit": jetzt}
+    save_status(st)
+    csv_youtube_eintragen(quelle, "fehlgeschlagen (nachholen möglich)")
+    extra = (" " + YT_SCHLUESSEL_HILFE) if fehler.schluessel else ""
+    warnung(f"YouTube: Upload von {name} fehlgeschlagen: {fehler}.{extra} Danach nachholen: Actions -> Run workflow -> "
+            f"youtube-nachholen -> Datei {name}")
+    return False
+
+
+def cmd_youtube():
+    """Läuft direkt nach dem Instagram-Post: lädt dasselbe Reel zu YouTube hoch."""
+    if not PLAN_FILE.exists():
+        return
+    plan = json.loads(PLAN_FILE.read_text(encoding="utf-8"))
+    if plan.get("typ") != "reel" or plan.get("test"):
+        print("Kein Reel (oder Testpost), nichts für YouTube.")
+        return
+    cfg, st = load_cfg(), load_status()
+    quelle = plan["quelle"]
+    if quelle not in st["gepostet"]:
+        print("Reel ist nicht auf Instagram gepostet, nichts für YouTube.")
+        return
+    if not yt_cfg(cfg).get("aktiv"):
+        st.setdefault("youtube", {}).setdefault(quelle, {"status": "aus"})
+        save_status(st)
+        csv_youtube_eintragen(quelle, "aus")
+        print("YouTube ist ausgeschaltet (youtube -> aktiv: false).")
+        return
+    _yt_versuchen(cfg, st, quelle, plan["art"])
+
+
+def _art_aus_quelle(quelle):
+    teile = quelle.split("/")
+    return teile[1] if len(teile) >= 3 else ""
+
+
+def cmd_youtube_nachholen(datei):
+    """Lädt ein auf Instagram gepostetes Reel nach, dessen YouTube-Upload fehlt (nie eines, das schon oben ist)."""
+    cfg, st = load_cfg(), load_status()
+    if not yt_cfg(cfg).get("aktiv"):
+        print("YouTube ist ausgeschaltet (youtube -> aktiv: false). Nachholen erst nach der Genehmigung.")
+        sys.exit(1)
+    datei = (datei or "").strip().replace("\\", "/")
+    if not datei:
+        print("Bitte bei 'datei' den Dateinamen eintragen (wie in gepostet.csv, Spalte Datei/Ordner).")
+        sys.exit(1)
+    reels = [q for q in dict.fromkeys(st["gepostet"]) if q.startswith("reels/")]
+    treffer = [q for q in reels if norm(kurzname(q)) == norm(datei) or norm(q) == norm(datei)]
+    if not treffer:
+        treffer = [q for q in reels if norm(q.rsplit("/", 1)[-1]) == norm(datei.rsplit("/", 1)[-1])]
+    if not treffer:
+        print(f"'{datei}' ist kein auf Instagram gepostetes Reel. Schreibweise wie in gepostet.csv prüfen.")
+        sys.exit(1)
+    if len(treffer) > 1:
+        print("Mehrere Reels passen, bitte mit Ordner angeben:", ", ".join(kurzname(q) for q in treffer))
+        sys.exit(1)
+    quelle = treffer[0]
+    if (st.get("youtube", {}).get(quelle) or {}).get("status") == "ok":
+        print("Dieses Reel ist schon auf YouTube:", yt_link(st["youtube"][quelle]["id"]))
+        sys.exit(1)
+    if not _yt_versuchen(cfg, st, quelle, _art_aus_quelle(quelle)):
+        sys.exit(1)
+
+
+def cmd_youtube_test():
+    """Nachweis fürs Prüfungsformular: lädt das zuletzt auf Instagram gepostete Reel PRIVAT hoch.
+    Zählt nicht als echter Upload (das Reel kann später ganz normal hochgeladen werden)."""
+    cfg, st = load_cfg(), load_status()
+    reels = [v for v in st.get("verlauf", []) if v.get("typ") == "reel" and not v.get("test")]
+    if not reels:
+        print("Noch kein Reel auf Instagram gepostet, nichts zum Testen.")
+        sys.exit(1)
+    quelle, art = reels[-1]["quelle"], reels[-1]["art"]
+    entry = yt_eintrag(cfg, art)
+    if not entry:
+        print(f"Reel-Typ '{art}' nicht in einstellungen.yaml gefunden.")
+        sys.exit(1)
+    video = MEDIA_ROOT / quelle
+    titel, beschreibung, hinweis = yt_texte(cfg, entry, video)
+    if hinweis:
+        print("Hinweis:", hinweis)
+    if not titel:
+        sys.exit(1)
+    hole_dateien([video])
+    print(f"Test-Upload (privat): {kurzname(quelle)}\nTitel: {titel}\nBeschreibung:\n{beschreibung}\n")
+    try:
+        vid = yt_hochladen(video, titel, beschreibung, yt_cfg(cfg), privat=True)
+    except YtFehler as f:
+        print("Test-Upload fehlgeschlagen:", f)
+        if f.schluessel:
+            print(YT_SCHLUESSEL_HILFE)
+        sys.exit(1)
+    st.setdefault("youtube_tests", []).append({"zeit": dt.datetime.now(TZ).isoformat(timespec="minutes"),
+                                               "quelle": quelle, "id": vid})
+    save_status(st)
+    text = (f"Test-Upload erfolgreich: {yt_link(vid)} (privat). Titel: {titel}")
+    print(text)
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary:
+        with open(summary, "a", encoding="utf-8") as f:
+            f.write("## YouTube-Test\n\n" + text + "\n")
 
 
 # ---------------------------------------------------------------- Vorschau
@@ -755,6 +1143,8 @@ def cmd_vorschau(days=14, ausgabe=True):
         vorrat.append("**Vorrat Zusatztermine:** " + ", ".join(
             f"{e.get('name', e['ordner'])}: {len((karussell_posts if e['typ'] == 'karussell' else reel_files)(cfg, st, [e])[norm(e['ordner'])])}"
             for e in extras))
+    vorrat.append("**YouTube:** " + ("an (Reels werden nach dem Instagram-Post hochgeladen)"
+                                     if yt_cfg(cfg).get("aktiv") else "aus (youtube -> aktiv: false)"))
     write_csv(GEPLANT_CSV, ["Datum", "Tag", "Uhrzeit", "Typ", "Art", "Datei/Ordner", "Caption (Reels)"], rows)
     text = "\n".join(lines + vorrat)
     if not ausgabe:
@@ -843,8 +1233,11 @@ def caption_liste(cfg, st):
         for v in reel_files(cfg, st, [e])[norm(e["ordner"])]:
             cap, hinweis = _caption_sicher(cfg, e, v)
             txt, _ = begleittext(v)
-            rows.append([e["ordner"], kurzname(rel(v)), "Textdatei" if txt else "fester Text", cap, hinweis or ""])
-    write_csv(CAPTIONS_CSV, ["Typ", "Datei", "Zeile 1 aus", "Caption", "Hinweis"], rows)
+            yt_titel, yt_beschr, yt_hinweis = _yt_texte_sicher(cfg, e, v)
+            rows.append([e["ordner"], kurzname(rel(v)), "Textdatei" if txt else "fester Text", cap, hinweis or "",
+                         yt_titel or "(kein gültiger Titel)", yt_beschr, yt_hinweis or ""])
+    write_csv(CAPTIONS_CSV, ["Typ", "Datei", "Zeile 1 aus", "Caption", "Hinweis",
+                             "YouTube-Titel", "YouTube-Beschreibung", "YouTube-Hinweis"], rows)
     print(f"Caption-Liste: {len(rows)} Reels -> status/captions_reels.csv")
 
 
@@ -855,5 +1248,11 @@ if __name__ == "__main__":
         cmd_prepare(t if t in ("reel", "karussell") else None)
     elif cmd == "publish":
         cmd_publish()
+    elif cmd == "youtube":
+        cmd_youtube()
+    elif cmd == "youtube-test":
+        cmd_youtube_test()
+    elif cmd == "youtube-nachholen":
+        cmd_youtube_nachholen(sys.argv[2] if len(sys.argv) > 2 else os.environ.get("DATEI", ""))
     else:
         cmd_vorschau(int(sys.argv[2]) if len(sys.argv) > 2 else 14)

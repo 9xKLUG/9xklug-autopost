@@ -13,6 +13,13 @@ on:
           - vorschau
           - test-reel
           - test-karussell
+          - test-youtube
+          - youtube-nachholen
+      datei:
+        description: "Nur für youtube-nachholen: Datei wie in gepostet.csv (Spalte Datei/Ordner), z. B. Suchsel/Name.mp4"
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -57,7 +64,7 @@ jobs:
 
       - name: Fälligen Post vorbereiten
         id: prep
-        if: github.event_name == 'schedule' || startsWith(inputs.aktion, 'test-')
+        if: github.event_name == 'schedule' || inputs.aktion == 'test-reel' || inputs.aktion == 'test-karussell'
         run: |
           case "${{ inputs.aktion }}" in
             test-reel) python autopost.py prepare --test reel ;;
@@ -104,6 +111,9 @@ jobs:
       IG_TOKEN: ${{ secrets.IG_TOKEN }}
       GH_PAT: ${{ secrets.GH_PAT }}
       PAGES_URL: ${{ needs.bereitstellen.outputs.url }}
+      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -118,6 +128,9 @@ jobs:
           name: plan
       - name: Auf Instagram posten
         run: python autopost.py publish
+      - name: Auf YouTube hochladen (nur Reels, nur wenn youtube -> aktiv)
+        continue-on-error: true   # ein YouTube-Fehler stoppt nie Instagram
+        run: python autopost.py youtube
       - name: Status speichern
         if: always()
         run: |
@@ -125,3 +138,34 @@ jobs:
           git config user.email "autopost@users.noreply.github.com"
           git add status 2>/dev/null || true
           git diff --cached --quiet || (git commit -m "Gepostet" && git pull --rebase && git push)
+
+  youtube_extra:
+    if: github.event_name == 'workflow_dispatch' && (inputs.aktion == 'test-youtube' || inputs.aktion == 'youtube-nachholen')
+    runs-on: ubuntu-latest
+    env:
+      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+      DATEI: ${{ inputs.datei }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none        # Videos/Bilder nicht vorab laden
+          sparse-checkout: status  # nur Programm, Einstellungen und Status
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow pyyaml requests
+      - name: YouTube-Test (privat)
+        if: inputs.aktion == 'test-youtube'
+        run: python autopost.py youtube-test
+      - name: YouTube nachholen
+        if: inputs.aktion == 'youtube-nachholen'
+        run: python autopost.py youtube-nachholen
+      - name: Status speichern
+        if: always()
+        run: |
+          git config user.name "9xklug-autopost"
+          git config user.email "autopost@users.noreply.github.com"
+          git add status 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "YouTube" && git pull --rebase && git push)

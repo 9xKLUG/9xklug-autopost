@@ -94,6 +94,9 @@ karussell_rhythmus:
 #  titelbild.png + Mail. Neuer Typ: Zeitpunkt erst prüfen (Vorschau -> Download "titelbilder").
 #  Fehlt hook oder aufforderung, wird nur mit Hashtags gepostet und du bekommst eine Mail.
 #  Neuer Typ: ordner, hashtags, hook und aufforderung eintragen.
+#
+#  youtube_text (seit 03.11.2026) = Beschreibung des Shorts auf YouTube für diesen Typ
+#  (darunter kommt der Schlusssatz aus dem Abschnitt youtube). Fehlt er: nur Schlusssatz + Mail.
 # ------------------------------------------------------------
 #  Fun Fact läuft seit 31.10.2026 nicht mehr in der Reihe, sondern fest Mo + So 14:30 (siehe extra_termine).
 reel_rhythmus:
@@ -102,26 +105,31 @@ reel_rhythmus:
     hook: "Zwei Antworten, eine stimmt. Wetten, du tippst falsch?"
     aufforderung: wissen
     titelbild_sekunde: 3
+    youtube_text: "Zwei Antworten, eine stimmt. Hast du richtig getippt? Ehrlich in die Kommentare."
   - ordner: Ausreißer
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Eins passt nicht. Findest du es?"
     aufforderung: suchen
     titelbild_sekunde: 3
+    youtube_text: "Eins passt nicht. Hast du es vor der Auflösung gefunden?"
   - ordner: optische täuschung
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Trau deinen Augen nicht."
     aufforderung: raten
     titelbild_sekunde: 4
+    youtube_text: "Trau deinen Augen nicht. Was hast du zuerst gesehen?"
   - ordner: wahr oder falsch
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
     hook: "Wahr oder falsch? Entscheide dich, bevor die Auflösung kommt."
     aufforderung: wissen
     titelbild_sekunde: 3
+    youtube_text: "Wahr oder falsch? Die meisten liegen daneben. Wie hast du getippt?"
   - ordner: Wissensfragen
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
     hook: "Wetten, das weißt du nicht?"
     aufforderung: wissen
     titelbild_sekunde: 4
+    youtube_text: "Wetten, das wusstest du nicht? Schreib in die Kommentare, ob du's gewusst hast."
 
 extra_termine:
   - typ: reel
@@ -132,6 +140,7 @@ extra_termine:
     hook: "Klingt ausgedacht, ist aber wahr."
     aufforderung: wissen
     titelbild_sekunde: 2
+    youtube_text: "Klingt ausgedacht, ist aber wahr. Wusstest du das? Ja oder Nein in die Kommentare."
   - typ: reel
     ordner: Welches Jahr
     tage: [Di]
@@ -140,6 +149,7 @@ extra_termine:
     hook: "Das alles ist in einem einzigen Jahr passiert. Welches Jahr ist es?"
     aufforderung: raten
     titelbild_sekunde: 5.9
+    youtube_text: "Das alles ist in einem einzigen Jahr passiert. Wie nah warst du dran?"
   - typ: reel
     ordner: Suchsel
     tage: [Mi]
@@ -148,6 +158,7 @@ extra_termine:
     hook: "Findest du alle versteckten Wörter?"
     aufforderung: suchen
     titelbild_sekunde: 5.5
+    youtube_text: "Alle gefunden oder eins übersehen? Sei ehrlich."
   - typ: reel
     ordner: Was verbindet sie
     tage: [Do]
@@ -156,6 +167,7 @@ extra_termine:
     hook: "Was haben sie gemeinsam? Kommst du drauf?"
     aufforderung: raten
     titelbild_sekunde: 4
+    youtube_text: "Was haben sie gemeinsam? Bist du vor der Auflösung draufgekommen?"
   - typ: reel
     ordner: Wer bin ich
     tage: [Fr]
@@ -164,6 +176,7 @@ extra_termine:
     hook: "Drei Hinweise, eine Person aus der Geschichte. Wer bin ich?"
     aufforderung: raten
     titelbild_sekunde: 6
+    youtube_text: "Drei Hinweise, eine Person aus der Geschichte. Nach welchem Hinweis wusstest du es?"
 
 # Bausteine für die Reel-Captions (siehe Erklärung oben bei REELS).
 # Gruppen dürfen beliebig viele Sätze haben. Neue Gruppe: Namen + Sätze anhängen.
@@ -179,3 +192,30 @@ reel_caption:
     raten:
       - "Schreib deinen Tipp in die Kommentare, bevor die Auflösung kommt."
       - "Schick das jemandem, der sich für schlau hält."
+
+# ------------------------------------------------------------
+#  YOUTUBE SHORTS (seit 03.11.2026)
+#  YouTube hängt an Instagram: Jedes Reel, das auf Instagram gepostet wird, geht danach
+#  auch zu YouTube. Karussells nie. Ein YouTube-Fehler stoppt nie Instagram.
+#  Titel = Zeile 1 der Reel-Caption (wie oben), über 100 Zeichen: fester hook.
+#  Beschreibung = youtube_text des Typs (siehe oben bei den Reels) + schluss.
+# ------------------------------------------------------------
+youtube:
+  # Erst auf true stellen, wenn Google den Prüfungsantrag genehmigt hat!
+  # Vorher wäre jedes Video dauerhaft "gesperrt als privat" und für YouTube verloren.
+  aktiv: false
+  schluss: "Täglich neue Rätsel, Denkfallen und verblüffendes Wissen für Erwachsene. Abonnier 9x KLUG, wenn dein Kopf mehr will."
+  # Kategorie: 24 = Unterhaltung, 27 = Bildung
+  kategorie: 24
+  sprache: de
+  # public = öffentlich (nach der Genehmigung). Andere Werte: unlisted, private
+  sichtbarkeit: public
+  # false = "Nein, nicht speziell für Kinder" (Kanal richtet sich an Erwachsene)
+  fuer_kinder: false
+  # KI-Kennzeichnung (nur nötig bei realistisch wirkenden Personen/Stimmen, nicht bei Instrumentalmusik)
+  ki_inhalt: false
+  abonnenten_benachrichtigen: true
+  # Zusatzzeilen in der Beschreibung (bewusst aus)
+  hashtags_anhaengen: false
+  impressum_zeile: false
+  impressum_url: "https://9xklug.github.io"
