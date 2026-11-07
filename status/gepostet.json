@@ -415,5 +415,12 @@
     "reels/Wer bin ich/9x_KLUG_WerBinIch_Astrid_Lindgren.mp4": {
       "status": "aus"
     }
-  }
+  },
+  "facebook_tests": [
+    {
+      "zeit": "2026-11-07T10:52+01:00",
+      "quelle": "reels/Wer bin ich/9x_KLUG_WerBinIch_Astrid_Lindgren.mp4",
+      "id": "1605532464112013"
+    }
+  ]
 }
