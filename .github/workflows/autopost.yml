@@ -15,8 +15,10 @@ on:
           - test-karussell
           - test-youtube
           - youtube-nachholen
+          - test-facebook
+          - facebook-nachholen
       datei:
-        description: "Nur für youtube-nachholen: Datei wie in gepostet.csv (Spalte Datei/Ordner), z. B. Suchsel/Name.mp4"
+        description: "Nur für youtube-nachholen / facebook-nachholen: Datei wie in gepostet.csv (Spalte Datei/Ordner), z. B. Suchsel/Name.mp4"
         type: string
         required: false
         default: ""
@@ -114,6 +116,8 @@ jobs:
       YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
       YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
       YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+      FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+      FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -128,6 +132,9 @@ jobs:
           name: plan
       - name: Auf Instagram posten
         run: python autopost.py publish
+      - name: Auf Facebook posten (nur Reels, nur wenn facebook -> aktiv)
+        continue-on-error: true   # ein Facebook-Fehler stoppt nie Instagram oder YouTube
+        run: python autopost.py facebook
       - name: Auf YouTube hochladen (nur Reels, nur wenn youtube -> aktiv)
         continue-on-error: true   # ein YouTube-Fehler stoppt nie Instagram
         run: python autopost.py youtube
@@ -169,3 +176,33 @@ jobs:
           git config user.email "autopost@users.noreply.github.com"
           git add status 2>/dev/null || true
           git diff --cached --quiet || (git commit -m "YouTube" && git pull --rebase && git push)
+
+  facebook_extra:
+    if: github.event_name == 'workflow_dispatch' && (inputs.aktion == 'test-facebook' || inputs.aktion == 'facebook-nachholen')
+    runs-on: ubuntu-latest
+    env:
+      FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+      FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+      DATEI: ${{ inputs.datei }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none        # Videos/Bilder nicht vorab laden
+          sparse-checkout: status  # nur Programm, Einstellungen und Status
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow pyyaml requests
+      - name: Facebook-Test (Entwurf, nicht öffentlich)
+        if: inputs.aktion == 'test-facebook'
+        run: python autopost.py facebook-test
+      - name: Facebook nachholen
+        if: inputs.aktion == 'facebook-nachholen'
+        run: python autopost.py facebook-nachholen
+      - name: Status speichern
+        if: always()
+        run: |
+          git config user.name "9xklug-autopost"
+          git config user.email "autopost@users.noreply.github.com"
+          git add status 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "Facebook" && git pull --rebase && git push)

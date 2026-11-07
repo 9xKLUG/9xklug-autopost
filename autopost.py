@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """9x KLUG Autopost: postet Karussells und Reels automatisch auf Instagram
-und lädt die Reels zusätzlich als YouTube Shorts hoch (seit 03.11.2026, Schalter youtube -> aktiv).
+und lädt die Reels zusätzlich als YouTube Shorts hoch (seit 03.11.2026, Schalter youtube -> aktiv)
+und als Reels auf die Facebook-Seite 9x KLUG (seit 07.11.2026, Schalter facebook -> aktiv).
 
 Befehle:
   python autopost.py prepare [--test reel|karussell]  -> legt fällige Medien in _site/ ab
@@ -8,6 +9,9 @@ Befehle:
   python autopost.py youtube                          -> lädt das eben auf Instagram gepostete Reel zu YouTube hoch
   python autopost.py youtube-test                     -> lädt das zuletzt gepostete Reel PRIVAT zu YouTube hoch (Test)
   python autopost.py youtube-nachholen <datei>        -> lädt ein Reel nach, dessen YouTube-Upload fehlte
+  python autopost.py facebook                         -> postet das eben auf Instagram gepostete Reel auf Facebook
+  python autopost.py facebook-test                    -> legt das zuletzt gepostete Reel als ENTWURF auf Facebook an
+  python autopost.py facebook-nachholen <datei>       -> postet ein Reel nach, das auf Facebook fehlt
   python autopost.py vorschau [tage]                  -> zeigt, was in den nächsten Tagen gepostet wird
                                                          (inkl. Caption) und schreibt die Caption-Liste
                                                          aller Reels im Vorrat (status/captions_reels.csv)
@@ -108,7 +112,8 @@ def save_status(st):
 
 GEPOSTET_CSV = ROOT / "status" / "gepostet.csv"
 GEPLANT_CSV = ROOT / "status" / "geplant.csv"
-CSV_KOPF = ["Datum", "Uhrzeit", "Typ", "Art", "Datei/Ordner", "Caption-Anfang", "Instagram-Link", "Test", "YouTube"]
+CSV_KOPF = ["Datum", "Uhrzeit", "Typ", "Art", "Datei/Ordner", "Caption-Anfang", "Instagram-Link", "Test", "YouTube",
+            "Facebook"]
 
 
 def _csv_lesen(path):
@@ -118,33 +123,45 @@ def _csv_lesen(path):
 
 
 def _csv_kopf_aktualisieren():
-    """Ältere gepostet.csv (ohne Spalte YouTube) einmalig um die Spalte ergänzen."""
+    """Ältere gepostet.csv (ohne Spalte YouTube bzw. Facebook) einmalig um die fehlenden Spalten ergänzen.
+    Neue Spalten kommen immer hinten dran, bestehende Spalten und Zeilen bleiben unverändert."""
     if not GEPOSTET_CSV.exists():
         return
     zeilen = _csv_lesen(GEPOSTET_CSV)
-    if not zeilen or "YouTube" in zeilen[0]:
+    if not zeilen:
         return
-    breite = len(zeilen[0])
-    rows = [z + [""] * (breite - len(z)) + [""] for z in zeilen[1:]]
-    write_csv(GEPOSTET_CSV, CSV_KOPF, rows)
+    fehlt = [k for k in CSV_KOPF if k not in zeilen[0]]
+    if not fehlt:
+        return
+    kopf = zeilen[0] + fehlt
+    rows = [z + [""] * (len(kopf) - len(z)) for z in zeilen[1:]]
+    write_csv(GEPOSTET_CSV, kopf, rows)
 
 
-def csv_youtube_eintragen(quelle, wert):
-    """Trägt in gepostet.csv beim (letzten) Instagram-Eintrag dieses Reels den YouTube-Stand ein."""
+def csv_spalte_eintragen(quelle, spalte, wert):
+    """Trägt in gepostet.csv beim (letzten) Instagram-Eintrag dieses Reels den Stand einer Plattform ein."""
     if not GEPOSTET_CSV.exists():
         return
     _csv_kopf_aktualisieren()
     zeilen = _csv_lesen(GEPOSTET_CSV)
     kopf = zeilen[0]
-    i_typ, i_datei, i_test, i_yt = (kopf.index(k) for k in ("Typ", "Datei/Ordner", "Test", "YouTube"))
+    i_typ, i_datei, i_test, i_sp = (kopf.index(k) for k in ("Typ", "Datei/Ordner", "Test", spalte))
     for z in reversed(zeilen[1:]):
         z += [""] * (len(kopf) - len(z))
         if z[i_typ] == "Reel" and z[i_datei] == kurzname(quelle) and not z[i_test].startswith("ja"):
-            z[i_yt] = wert
+            z[i_sp] = wert
             break
     else:
         return
     write_csv(GEPOSTET_CSV, kopf, zeilen[1:])
+
+
+def csv_youtube_eintragen(quelle, wert):
+    csv_spalte_eintragen(quelle, "YouTube", wert)
+
+
+def csv_facebook_eintragen(quelle, wert):
+    csv_spalte_eintragen(quelle, "Facebook", wert)
 
 
 def write_csv(path, header, rows, append=False):
@@ -714,12 +731,13 @@ def _als_gepostet(plan, st, link, hinweis=""):
     test = "ja" if plan.get("test") else ""
     if hinweis:
         test = (test + " " + hinweis).strip()
-    # YouTube-Spalte: Karussells gehen nie zu YouTube ("–"), Reels trägt der YouTube-Schritt danach ein.
-    yt = "–" if plan["typ"] == "karussell" or plan.get("test") else ""
+    # YouTube- und Facebook-Spalte: Karussells und Testposts gehen nie dorthin ("–"),
+    # bei Reels tragen der YouTube- und der Facebook-Schritt danach ihren Stand ein.
+    yt = fb = "–" if plan["typ"] == "karussell" or plan.get("test") else ""
     _csv_kopf_aktualisieren()
     write_csv(GEPOSTET_CSV, CSV_KOPF, [[jetzt.strftime("%d.%m.%Y"), jetzt.strftime("%H:%M"),
               "Reel" if plan["typ"] == "reel" else "Karussell", plan["art"], kurzname(plan["quelle"]),
-              cap[:120], link, test, yt]], append=True)
+              cap[:120], link, test, yt, fb]], append=True)
 
     st["gepostet"].append(plan["quelle"])
     if plan.get("termin"):
@@ -1084,6 +1102,385 @@ def cmd_youtube_test():
             f.write("## YouTube-Test\n\n" + text + "\n")
 
 
+# ---------------------------------------------------------------- Facebook-Seite (Reels)
+# Regeln (Konzept vom 07.11.2026, Details in einstellungen.yaml unter "facebook"):
+# - Facebook hängt an Instagram: Jedes Reel, das auf Instagram gepostet wurde, geht danach im selben
+#   Lauf auch als Reel auf die Facebook-Seite 9x KLUG. Karussells und Testposts nie.
+#   Ein Facebook-Fehler stoppt nie Instagram (und nie YouTube).
+# - Text = Zeile 1 aus der gleichnamigen .txt des Reels (falls vorhanden), darunter facebook_text des Typs.
+#   Reels ohne .txt bekommen nur facebook_text. Keine Hashtags.
+# - Eigener Stand je Reel in status/gepostet.json -> facebook und Spalte "Facebook" in gepostet.csv.
+#   Damit lässt sich später ein eigener Facebook-Zeitplan nachrüsten (Reels, die dort noch fehlen).
+# - Doppel-Schutz: Jedes Reel wird höchstens einmal veröffentlicht. Vor dem Veröffentlichen steht
+#   "unklar" im Status. Hochladen (noch nicht öffentlich) darf wiederholt werden, Veröffentlichen nicht.
+#   Ist unklar, ob das Reel online ging, fragt das Programm bei Facebook nach. Bleibt es unklar:
+#   kein neuer Versuch + Mail.
+# - Das Video wird direkt hochgeladen (nicht über einen Link), braucht also keine GitHub-Pages-Seite.
+FB_API = "https://graph.facebook.com"
+FB_UPLOAD = "https://rupload.facebook.com/video-upload"
+FB_VERSUCHE = 3
+FB_TEXT_MAX = 5000  # Facebook erlaubt deutlich mehr, Puffer gegen Fehler in den Einstellungen
+FB_SCHLUESSEL_HILFE = (
+    "So erneuerst du den Facebook-Schlüssel: developers.facebook.com/tools/explorer -> App '9xklug Autopost' -> "
+    "Nutzer-Token anfordern mit pages_show_list, pages_read_engagement, pages_manage_posts -> Generate Access Token "
+    "(nur Seite 9x KLUG) -> 'i' -> Im Zugriffsschlüssel-Tool öffnen -> Zugriffsschlüssel verlängern -> den verlängerten "
+    "Schlüssel im Explorer einsetzen -> me/accounts?fields=id,name,access_token senden -> access_token von 9x KLUG "
+    "im Zugriffsschlüssel-Tool prüfen (Läuft ab: Nie) -> bei GitHub das Secret FB_PAGE_TOKEN ersetzen.")
+
+
+class FbFehler(Exception):
+    """klar=True: sicher nicht veröffentlicht (Wiederholen ist sicher). klar=False: unklar, ob online.
+    schluessel=True: Schlüssel ungültig oder Rechte fehlen."""
+
+    def __init__(self, text, klar=True, schluessel=False):
+        super().__init__(text)
+        self.klar = klar
+        self.schluessel = schluessel
+
+
+def fb_cfg(cfg):
+    return cfg.get("facebook") or {}
+
+
+def fb_text(cfg, entry, video):
+    """Gibt (text, hinweis) zurück. text ist None, wenn kein Text möglich ist."""
+    hinweise = []
+    txt, datei = begleittext(video)
+    if datei and not txt:
+        hinweise.append(f"Textdatei {rel(datei)} ist leer.")
+    eigen = str(entry.get("facebook_text") or "").strip()
+    if eigen:
+        eigen = "\n".join(l.rstrip() for l in eigen.splitlines()).strip()
+    teile = [t for t in (txt, eigen) if t]
+    if not eigen:
+        hinweise.append(f"Reel-Typ '{entry['ordner']}' hat keinen facebook_text in einstellungen.yaml.")
+        if not txt:
+            fest = str(entry.get("hook") or "").strip()
+            if fest:
+                teile = [fest]
+                hinweise.append("Fester hook des Typs als Text verwendet.")
+    if not teile:
+        return None, " ".join(hinweise + [f"Kein Facebook-Text für {rel(video)} möglich."])
+    text = "\n\n".join(teile)
+    if len(text) > FB_TEXT_MAX:
+        return None, " ".join(hinweise + [f"Facebook-Text für {rel(video)} ist länger als {FB_TEXT_MAX} Zeichen."])
+    return text, " ".join(hinweise) or None
+
+
+def _fb_text_sicher(cfg, entry, video):
+    try:
+        return fb_text(cfg, entry, video)
+    except Exception as fehler:
+        return None, f"Fehler: {fehler}"
+
+
+def _fb_version(cfg):
+    return str(fb_cfg(cfg).get("api_version") or "v25.0")
+
+
+def fb_api(cfg, method, path, **params):
+    """Ruft die Facebook-Schnittstelle auf. Wirft FbFehler (klar=True), wenn Facebook ablehnt."""
+    import requests
+    params["access_token"] = os.environ.get("FB_PAGE_TOKEN", "")
+    url = f"{FB_API}/{_fb_version(cfg)}/{path}"
+    try:
+        r = requests.request(method, url, data=params if method == "POST" else None,
+                             params=None if method == "POST" else params, timeout=120)
+        data = r.json()
+    except Exception as fehler:
+        raise FbFehler(f"Facebook nicht erreichbar ({path}): {fehler}", klar=False)
+    if r.status_code >= 400 or "error" in data:
+        err = data.get("error") or {}
+        code = err.get("code")
+        # 190/102 = Schlüssel ungültig oder abgelaufen, 10 und 200-299 = Berechtigung fehlt
+        schluessel = isinstance(code, int) and (code in (190, 102, 10) or 200 <= code <= 299)
+        raise FbFehler(f"Facebook-Fehler bei {path}: {err.get('message') or data}", schluessel=schluessel)
+    return data
+
+
+def fb_seite_pruefen(cfg):
+    """Prüft Schlüssel und Seite. Gibt den Seitennamen zurück."""
+    if not os.environ.get("FB_PAGE_TOKEN") or not os.environ.get("FB_PAGE_ID"):
+        raise FbFehler("GitHub-Secret FB_PAGE_TOKEN oder FB_PAGE_ID fehlt.", schluessel=True)
+    return fb_api(cfg, "GET", os.environ["FB_PAGE_ID"], fields="name").get("name", "?")
+
+
+def fb_status(cfg, video_id):
+    """Stand eines Facebook-Videos: ('online'|'verarbeitung'|'nicht_veroeffentlicht'|'fehler'|'unbekannt', permalink).
+    'nicht_veroeffentlicht' = hochgeladen, aber das Veröffentlichen hat (noch) nicht begonnen."""
+    try:
+        d = fb_api(cfg, "GET", video_id, fields="status,permalink_url")
+    except FbFehler:
+        return "unbekannt", ""
+    s = d.get("status") or {}
+    link = d.get("permalink_url") or ""
+    if link.startswith("/"):
+        link = "https://www.facebook.com" + link
+    pub = (s.get("publishing_phase") or {}).get("status")
+    vs = s.get("video_status")
+    if vs == "error" or pub == "error" or (s.get("processing_phase") or {}).get("status") == "error":
+        return "fehler", link
+    if pub == "complete":
+        return "online", link
+    if pub == "in_progress":
+        return "verarbeitung", link
+    if pub == "not_started":
+        return "nicht_veroeffentlicht", link
+    if vs in ("ready", "published"):
+        return "online", link
+    return "unbekannt", link
+
+
+def fb_hochladen(cfg, video):
+    """Legt das Reel bei Facebook an und lädt das Video hoch (noch NICHT veröffentlicht). Gibt die Video-ID zurück.
+    Ein Fehler hier ist sicher (es ist nichts online), daher klar=True."""
+    import requests
+    page = os.environ["FB_PAGE_ID"]
+    daten = video.read_bytes()
+    if not daten:
+        raise FbFehler(f"Video {rel(video)} ist leer.")
+    start = fb_api(cfg, "POST", f"{page}/video_reels", upload_phase="start")
+    vid = start.get("video_id")
+    if not vid:
+        raise FbFehler(f"Facebook hat keine Video-ID geliefert: {start}")
+    try:
+        r = requests.post(start.get("upload_url") or f"{FB_UPLOAD}/{_fb_version(cfg)}/{vid}",
+                          headers={"Authorization": "OAuth " + os.environ["FB_PAGE_TOKEN"],
+                                   "offset": "0", "file_size": str(len(daten))},
+                          data=daten, timeout=900)
+        antwort = r.json()
+    except Exception as fehler:
+        raise FbFehler(f"Video-Upload zu Facebook unterbrochen: {fehler}")
+    if r.status_code >= 400 or not antwort.get("success"):
+        raise FbFehler(f"Facebook hat das Video abgelehnt ({r.status_code}): {str(antwort)[:400]}")
+    return vid
+
+
+def fb_veroeffentlichen(cfg, vid, text, entwurf=False):
+    """Veröffentlicht das hochgeladene Reel (oder legt es als Entwurf ab). Gibt den Link zurück (kann leer sein).
+    Jeder unklare Fehler hier ist NICHT sicher wiederholbar."""
+    page = os.environ["FB_PAGE_ID"]
+    try:
+        fb_api(cfg, "POST", f"{page}/video_reels", upload_phase="finish", video_id=vid,
+               video_state="DRAFT" if entwurf else "PUBLISHED", description=text)
+    except FbFehler as fehler:
+        if fehler.schluessel:
+            raise
+        # Facebook meldet manchmal einen Fehler, obwohl das Reel angenommen wurde -> nachfragen.
+        time.sleep(20)
+        stand, link = fb_status(cfg, vid)
+        if stand in ("online", "verarbeitung") and not entwurf:
+            return link
+        # Sicher nicht online: Facebook hat eindeutig abgelehnt, oder es meldet selbst "nicht veröffentlicht".
+        # Verbindungsfehler ohne klare Antwort und ohne klaren Stand = unklar, nicht wiederholen.
+        klar = stand == "nicht_veroeffentlicht" or (fehler.klar and stand in ("fehler", "unbekannt"))
+        raise FbFehler(f"{fehler} (Stand bei Facebook: {stand})", klar=klar)
+    if entwurf:
+        return ""
+    # Auf die Verarbeitung warten (höchstens ca. 5 Minuten). Bleibt sie länger, gilt das Reel als gepostet,
+    # denn Facebook hat es angenommen und stellt es nach der Verarbeitung von selbst online.
+    link = ""
+    for _ in range(20):
+        time.sleep(15)
+        stand, link = fb_status(cfg, vid)
+        if stand == "online":
+            return link
+        if stand == "fehler":
+            # Verarbeitung fehlgeschlagen: das Reel ist nicht online, Nachholen ist sicher.
+            raise FbFehler("Facebook konnte das Reel nicht verarbeiten (Status error)")
+    print("Facebook verarbeitet das Reel noch, es geht von selbst online.")
+    return link
+
+
+def fb_link(vid, link=""):
+    return link or f"https://www.facebook.com/reel/{vid}"
+
+
+def _fb_versuchen(cfg, st, quelle, art):
+    """Postet ein auf Instagram gepostetes Reel auf die Facebook-Seite, mit Doppel-Schutz. Speichert den Status."""
+    fbs = st.setdefault("facebook", {})
+    if (fbs.get(quelle) or {}).get("status") == "ok":
+        print("Schon auf Facebook, wird nicht nochmal gepostet:", quelle)
+        return True
+    if (fbs.get(quelle) or {}).get("status") == "unklar":
+        print("Stand auf Facebook unklar, wird zur Sicherheit nicht nochmal gepostet:", quelle)
+        return False
+    entry = yt_eintrag(cfg, art)
+    video = MEDIA_ROOT / quelle
+    name = kurzname(quelle)
+    jetzt = lambda: dt.datetime.now(TZ).isoformat(timespec="minutes")
+
+    def fehlgeschlagen(grund, mail):
+        fbs[quelle] = {"status": "fehlgeschlagen", "grund": grund, "zeit": jetzt()}
+        save_status(st)
+        csv_facebook_eintragen(quelle, "fehlgeschlagen (nachholen möglich)")
+        warnung(mail)
+        return False
+
+    if not entry:
+        return fehlgeschlagen(f"Reel-Typ '{art}' nicht in einstellungen.yaml",
+                              f"Facebook: Reel {name} nicht gepostet (Reel-Typ '{art}' nicht in einstellungen.yaml).")
+    text, hinweis = fb_text(cfg, entry, video)
+    if hinweis:
+        warnung("Facebook: " + hinweis)
+    if not text:
+        fbs[quelle] = {"status": "fehlgeschlagen", "grund": "kein Text", "zeit": jetzt()}
+        save_status(st)
+        csv_facebook_eintragen(quelle, "fehlgeschlagen (nachholen möglich)")
+        return False
+    try:
+        fb_seite_pruefen(cfg)
+    except FbFehler as f:
+        extra = (" " + FB_SCHLUESSEL_HILFE) if f.schluessel else ""
+        return fehlgeschlagen(str(f), f"Facebook: Reel {name} nicht gepostet: {f}.{extra} Danach nachholen: "
+                                      f"Actions -> Run workflow -> facebook-nachholen -> Datei {name}")
+    hole_dateien([video])
+
+    # 1) Hochladen (noch nicht öffentlich). Fehler hier sind sicher, bis zu 3 Versuche.
+    vid, fehler = None, None
+    for versuch in range(1, FB_VERSUCHE + 1):
+        try:
+            vid = fb_hochladen(cfg, video)
+            break
+        except FbFehler as f:
+            fehler = f
+            print(f"Facebook-Upload Versuch {versuch} fehlgeschlagen:", f)
+            if f.schluessel:
+                break
+            if versuch < FB_VERSUCHE:
+                time.sleep(60)
+    if not vid:
+        extra = (" " + FB_SCHLUESSEL_HILFE) if fehler.schluessel else ""
+        return fehlgeschlagen(str(fehler), f"Facebook: Reel {name} nicht gepostet: {fehler}.{extra} Danach nachholen: "
+                                           f"Actions -> Run workflow -> facebook-nachholen -> Datei {name}")
+
+    # 2) Veröffentlichen. Erst "unklar" speichern: bricht der Lauf ab, wird nie automatisch nochmal gepostet.
+    fbs[quelle] = {"status": "unklar", "id": vid, "zeit": jetzt()}
+    save_status(st)
+    csv_facebook_eintragen(quelle, "unklar: bitte auf der Facebook-Seite prüfen")
+    try:
+        link = fb_veroeffentlichen(cfg, vid, text)
+    except FbFehler as f:
+        if f.klar and not f.schluessel:
+            return fehlgeschlagen(str(f), f"Facebook: Reel {name} nicht gepostet: {f}. Danach nachholen: "
+                                          f"Actions -> Run workflow -> facebook-nachholen -> Datei {name}")
+        fbs[quelle] = {"status": "unklar", "id": vid, "grund": str(f), "zeit": jetzt()}
+        save_status(st)
+        extra = (" " + FB_SCHLUESSEL_HILFE) if f.schluessel else ""
+        warnung(f"Facebook: Ob {name} online ist, ist unklar. Bitte auf der Facebook-Seite (Reels) nachschauen. "
+                f"Falls es fehlt: Actions -> Run workflow -> facebook-nachholen -> Datei {name}.{extra} Grund: {f}")
+        return False
+    fbs[quelle] = {"status": "ok", "id": vid, "link": fb_link(vid, link), "zeit": jetzt()}
+    save_status(st)
+    csv_facebook_eintragen(quelle, fb_link(vid, link))
+    print("Auf Facebook gepostet:", fb_link(vid, link))
+    return True
+
+
+def cmd_facebook():
+    """Läuft direkt nach dem Instagram-Post: postet dasselbe Reel auf die Facebook-Seite."""
+    if not PLAN_FILE.exists():
+        return
+    plan = json.loads(PLAN_FILE.read_text(encoding="utf-8"))
+    if plan.get("typ") != "reel" or plan.get("test"):
+        print("Kein Reel (oder Testpost), nichts für Facebook.")
+        return
+    cfg, st = load_cfg(), load_status()
+    quelle = plan["quelle"]
+    if quelle not in st["gepostet"]:
+        print("Reel ist nicht auf Instagram gepostet, nichts für Facebook.")
+        return
+    if not fb_cfg(cfg).get("aktiv"):
+        st.setdefault("facebook", {}).setdefault(quelle, {"status": "aus"})
+        save_status(st)
+        csv_facebook_eintragen(quelle, "aus")
+        print("Facebook ist ausgeschaltet (facebook -> aktiv: false).")
+        return
+    _fb_versuchen(cfg, st, quelle, plan["art"])
+
+
+def cmd_facebook_nachholen(datei):
+    """Postet ein auf Instagram gepostetes Reel nach, das auf Facebook fehlt (nie eines, das schon dort ist)."""
+    cfg, st = load_cfg(), load_status()
+    if not fb_cfg(cfg).get("aktiv"):
+        print("Facebook ist ausgeschaltet (facebook -> aktiv: false). Erst einschalten, dann nachholen.")
+        sys.exit(1)
+    datei = (datei or "").strip().replace("\\", "/")
+    if not datei:
+        print("Bitte bei 'datei' den Dateinamen eintragen (wie in gepostet.csv, Spalte Datei/Ordner).")
+        sys.exit(1)
+    reels = [q for q in dict.fromkeys(st["gepostet"]) if q.startswith("reels/")]
+    treffer = [q for q in reels if norm(kurzname(q)) == norm(datei) or norm(q) == norm(datei)]
+    if not treffer:
+        treffer = [q for q in reels if norm(q.rsplit("/", 1)[-1]) == norm(datei.rsplit("/", 1)[-1])]
+    if not treffer:
+        print(f"'{datei}' ist kein auf Instagram gepostetes Reel. Schreibweise wie in gepostet.csv prüfen.")
+        sys.exit(1)
+    if len(treffer) > 1:
+        print("Mehrere Reels passen, bitte mit Ordner angeben:", ", ".join(kurzname(q) for q in treffer))
+        sys.exit(1)
+    quelle = treffer[0]
+    eintrag = st.get("facebook", {}).get(quelle) or {}
+    if eintrag.get("status") == "ok":
+        print("Dieses Reel ist schon auf Facebook:", eintrag.get("link") or eintrag.get("id"))
+        sys.exit(1)
+    if eintrag.get("status") == "unklar":
+        # Du hast auf der Seite nachgeschaut und es fehlt: Sperre aufheben.
+        print("Stand war unklar, du hast nachgeschaut und das Reel fehlt: wird jetzt gepostet.")
+        st["facebook"].pop(quelle, None)
+    if not _fb_versuchen(cfg, st, quelle, _art_aus_quelle(quelle)):
+        sys.exit(1)
+
+
+def cmd_facebook_test():
+    """Test: legt das zuletzt auf Instagram gepostete Reel als ENTWURF auf der Facebook-Seite an (nicht öffentlich).
+    Zählt nicht als echter Post. Den Entwurf findest du in der Meta Business Suite unter Inhalte -> Entwürfe."""
+    cfg, st = load_cfg(), load_status()
+    try:
+        seite = fb_seite_pruefen(cfg)
+    except FbFehler as f:
+        print("Test fehlgeschlagen:", f)
+        if f.schluessel:
+            print(FB_SCHLUESSEL_HILFE)
+        sys.exit(1)
+    print("Schlüssel funktioniert, Seite:", seite)
+    reels = [v for v in st.get("verlauf", []) if v.get("typ") == "reel" and not v.get("test")]
+    if not reels:
+        print("Noch kein Reel auf Instagram gepostet, nichts zum Testen.")
+        sys.exit(1)
+    quelle, art = reels[-1]["quelle"], reels[-1]["art"]
+    entry = yt_eintrag(cfg, art)
+    if not entry:
+        print(f"Reel-Typ '{art}' nicht in einstellungen.yaml gefunden.")
+        sys.exit(1)
+    video = MEDIA_ROOT / quelle
+    text, hinweis = fb_text(cfg, entry, video)
+    if hinweis:
+        print("Hinweis:", hinweis)
+    if not text:
+        sys.exit(1)
+    hole_dateien([video])
+    print(f"Test (Entwurf, nicht öffentlich): {kurzname(quelle)}\nText:\n{text}\n")
+    try:
+        vid = fb_hochladen(cfg, video)
+        fb_veroeffentlichen(cfg, vid, text, entwurf=True)
+    except FbFehler as f:
+        print("Test fehlgeschlagen:", f)
+        if f.schluessel:
+            print(FB_SCHLUESSEL_HILFE)
+        sys.exit(1)
+    st.setdefault("facebook_tests", []).append({"zeit": dt.datetime.now(TZ).isoformat(timespec="minutes"),
+                                                "quelle": quelle, "id": vid})
+    save_status(st)
+    ergebnis = (f"Test erfolgreich: Seite '{seite}', Reel {kurzname(quelle)} als Entwurf angelegt (Video-ID {vid}). "
+                "Zu finden in der Meta Business Suite unter Inhalte -> Entwürfe. Danach dort löschen.")
+    print(ergebnis)
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary:
+        with open(summary, "a", encoding="utf-8") as f:
+            f.write("## Facebook-Test\n\n" + ergebnis + "\n\nText:\n\n" + text + "\n")
+
+
 # ---------------------------------------------------------------- Vorschau
 def cmd_vorschau(days=14, ausgabe=True):
     cfg, st = load_cfg(), load_status()
@@ -1145,6 +1542,8 @@ def cmd_vorschau(days=14, ausgabe=True):
             for e in extras))
     vorrat.append("**YouTube:** " + ("an (Reels werden nach dem Instagram-Post hochgeladen)"
                                      if yt_cfg(cfg).get("aktiv") else "aus (youtube -> aktiv: false)"))
+    vorrat.append("**Facebook:** " + ("an (Reels werden nach dem Instagram-Post auf die Seite gepostet)"
+                                      if fb_cfg(cfg).get("aktiv") else "aus (facebook -> aktiv: false)"))
     write_csv(GEPLANT_CSV, ["Datum", "Tag", "Uhrzeit", "Typ", "Art", "Datei/Ordner", "Caption (Reels)"], rows)
     text = "\n".join(lines + vorrat)
     if not ausgabe:
@@ -1234,10 +1633,13 @@ def caption_liste(cfg, st):
             cap, hinweis = _caption_sicher(cfg, e, v)
             txt, _ = begleittext(v)
             yt_titel, yt_beschr, yt_hinweis = _yt_texte_sicher(cfg, e, v)
+            fb, fb_hinweis = _fb_text_sicher(cfg, e, v)
             rows.append([e["ordner"], kurzname(rel(v)), "Textdatei" if txt else "fester Text", cap, hinweis or "",
-                         yt_titel or "(kein gültiger Titel)", yt_beschr, yt_hinweis or ""])
+                         yt_titel or "(kein gültiger Titel)", yt_beschr, yt_hinweis or "",
+                         fb or "(kein Text möglich)", fb_hinweis or ""])
     write_csv(CAPTIONS_CSV, ["Typ", "Datei", "Zeile 1 aus", "Caption", "Hinweis",
-                             "YouTube-Titel", "YouTube-Beschreibung", "YouTube-Hinweis"], rows)
+                             "YouTube-Titel", "YouTube-Beschreibung", "YouTube-Hinweis",
+                             "Facebook-Text", "Facebook-Hinweis"], rows)
     print(f"Caption-Liste: {len(rows)} Reels -> status/captions_reels.csv")
 
 
@@ -1254,5 +1656,11 @@ if __name__ == "__main__":
         cmd_youtube_test()
     elif cmd == "youtube-nachholen":
         cmd_youtube_nachholen(sys.argv[2] if len(sys.argv) > 2 else os.environ.get("DATEI", ""))
+    elif cmd == "facebook":
+        cmd_facebook()
+    elif cmd == "facebook-test":
+        cmd_facebook_test()
+    elif cmd == "facebook-nachholen":
+        cmd_facebook_nachholen(sys.argv[2] if len(sys.argv) > 2 else os.environ.get("DATEI", ""))
     else:
         cmd_vorschau(int(sys.argv[2]) if len(sys.argv) > 2 else 14)

@@ -97,6 +97,12 @@ karussell_rhythmus:
 #
 #  youtube_text (seit 03.11.2026) = Beschreibung des Shorts auf YouTube für diesen Typ
 #  (darunter kommt der Schlusssatz aus dem Abschnitt youtube). Fehlt er: nur Schlusssatz + Mail.
+#
+#  facebook_text (seit 07.11.2026) = Text des Reels auf der Facebook-Seite für diesen Typ.
+#  Darüber steht die Zeile aus der Textdatei des Reels (falls es eine hat). Keine Hashtags.
+#  Mehrere Zeilen: nach "facebook_text: |" jede Zeile gleich weit einrücken, Leerzeile = Absatz.
+#  Die Texte sind vorläufig und dürfen jederzeit ersetzt werden (danach Vorschau laufen lassen:
+#  status/captions_reels.csv zeigt in der Spalte Facebook-Text genau, was rausgeht).
 # ------------------------------------------------------------
 #  Fun Fact läuft seit 31.10.2026 nicht mehr in der Reihe, sondern fest Mo + So 14:30 (siehe extra_termine).
 reel_rhythmus:
@@ -106,30 +112,70 @@ reel_rhythmus:
     aufforderung: wissen
     titelbild_sekunde: 3
     youtube_text: "Zwei Antworten, eine stimmt. Hast du richtig getippt? Ehrlich in die Kommentare."
+    facebook_text: |
+      Zwei Antworten. Eine ist falsch. Deine hoffentlich nicht. 😏
+
+      Zwei Antworten. Eine ist richtig. Und hinterher ist natürlich immer alles völlig offensichtlich.
+
+      Bei „Entweder oder“ entscheidet sich, ob du wirklich Bescheid weißt, oder nur verdammt überzeugend falsch liegst.
+
+      Na, richtig gelegen oder gnadenlos daneben? 👇
   - ordner: Ausreißer
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Eins passt nicht. Findest du es?"
     aufforderung: suchen
     titelbild_sekunde: 3
     youtube_text: "Eins passt nicht. Hast du es vor der Auflösung gefunden?"
+    facebook_text: |
+      Einer passt nicht dazu. Finde ihn. 🔍
+
+      Alle sehen gleich aus. Fast alle. Einer tanzt aus der Reihe und hofft, dass du ihn übersiehst.
+
+      Beim „Ausreißer“ zählt nur eins: wie schnell deine Augen sind.
+
+      Na, sofort entdeckt oder bis zum Schluss gesucht? 👇
   - ordner: optische täuschung
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Trau deinen Augen nicht."
     aufforderung: raten
     titelbild_sekunde: 4
     youtube_text: "Trau deinen Augen nicht. Was hast du zuerst gesehen?"
+    facebook_text: |
+      Sieht eindeutig aus. Ist es aber nicht. 👀
+
+      Dein Gehirn ist schnell. Sehr schnell. Manchmal leider zu schnell für die Wahrheit.
+
+      Bei den optischen Täuschungen merkst du, wie leicht sich selbst ein kluger Kopf reinlegen lässt.
+
+      Na, durchschaut oder reingefallen? 👇
   - ordner: wahr oder falsch
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
     hook: "Wahr oder falsch? Entscheide dich, bevor die Auflösung kommt."
     aufforderung: wissen
     titelbild_sekunde: 3
     youtube_text: "Wahr oder falsch? Die meisten liegen daneben. Wie hast du getippt?"
+    facebook_text: |
+      Klingt logisch. Muss es aber nicht sein. 🤔
+
+      Eine Aussage. Wahr oder falsch. Wie schwer kann das schon sein?
+
+      Bei „Wahr oder falsch“ zeigt sich, wie viel von deinem Wissen wirklich Wissen ist und wie viel nur gut klingt.
+
+      Na, richtig erkannt oder auf den Leim gegangen? 👇
   - ordner: Wissensfragen
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
     hook: "Wetten, das weißt du nicht?"
     aufforderung: wissen
     titelbild_sekunde: 4
     youtube_text: "Wetten, das wusstest du nicht? Schreib in die Kommentare, ob du's gewusst hast."
+    facebook_text: |
+      Eine Frage. Eine richtige Antwort. Keine Ausreden. 🧠
+
+      Klingt einfach. Bis man die Antworten sieht und plötzlich alles irgendwie richtig wirkt.
+
+      Bei den Wissensfragen trennt sich echtes Wissen von gutem Raten.
+
+      Na, gewusst oder geraten? 👇
 
 extra_termine:
   - typ: reel
@@ -141,6 +187,14 @@ extra_termine:
     aufforderung: wissen
     titelbild_sekunde: 2
     youtube_text: "Klingt ausgedacht, ist aber wahr. Wusstest du das? Ja oder Nein in die Kommentare."
+    facebook_text: |
+      Klingt ausgedacht. Ist es aber nicht. 🤯
+
+      Manche Fakten hört man einmal und vergisst sie nie wieder. Meistens genau die, die man nie gebraucht hätte.
+
+      Bei „Fun Fact“ gibt's Wissen, nach dem niemand gefragt hat und das man trotzdem sofort weitererzählen will.
+
+      Na, wusstest du's schon oder hast du gerade was gelernt? 👇
   - typ: reel
     ordner: Welches Jahr
     tage: [Di]
@@ -150,6 +204,14 @@ extra_termine:
     aufforderung: raten
     titelbild_sekunde: 5.9
     youtube_text: "Das alles ist in einem einzigen Jahr passiert. Wie nah warst du dran?"
+    facebook_text: |
+      Ein gesuchtes Jahr. Keine Ahnung? Oder doch? 📅
+
+      Ein paar Hinweise, ein Jahr. Grob schätzen kann jeder. Aufs Jahr genau wird's eng.
+
+      Bei „Welches Jahr?“ zeigt sich, wie gut dein Geschichtsgefühl wirklich ist.
+
+      Na, Volltreffer oder Jahrzehnte daneben? 👇
   - typ: reel
     ordner: Suchsel
     tage: [Mi]
@@ -159,6 +221,14 @@ extra_termine:
     aufforderung: suchen
     titelbild_sekunde: 5.5
     youtube_text: "Alle gefunden oder eins übersehen? Sei ehrlich."
+    facebook_text: |
+      Drei Wörter. Ein Buchstabensalat. Los. 🔤
+
+      Die Wörter sind alle da. Sie verstecken sich nur ziemlich gut.
+
+      Beim Suchsel brauchst du kein Wissen, nur gute Augen und ein bisschen Geduld.
+
+      Na, alle drei gefunden oder fehlt noch eins? 👇
   - typ: reel
     ordner: Was verbindet sie
     tage: [Do]
@@ -168,6 +238,14 @@ extra_termine:
     aufforderung: raten
     titelbild_sekunde: 4
     youtube_text: "Was haben sie gemeinsam? Bist du vor der Auflösung draufgekommen?"
+    facebook_text: |
+      Drei Dinge. Eine Gemeinsamkeit. Siehst du sie? 🔗
+
+      Auf den ersten Blick haben sie nichts miteinander zu tun. Auf den zweiten auch nicht. Und dann macht's klick.
+
+      Bei „Was verbindet sie?“ gewinnt, wer um die Ecke denkt.
+
+      Na, sofort geschnallt oder hat's ewig gedauert? 👇
   - typ: reel
     ordner: Wer bin ich
     tage: [Fr]
@@ -177,6 +255,14 @@ extra_termine:
     aufforderung: raten
     titelbild_sekunde: 6
     youtube_text: "Drei Hinweise, eine Person aus der Geschichte. Nach welchem Hinweis wusstest du es?"
+    facebook_text: |
+      Wer bin ich? Die Hinweise verraten es. Nach und nach. 🕵️
+
+      Erst passt alles auf jeden. Dann wird's enger. Und irgendwann fragst du dich, warum du nicht gleich drauf gekommen bist.
+
+      Bei „Wer bin ich?“ zählt, wie wenige Hinweise du brauchst.
+
+      Na, beim ersten Hinweis oder erst ganz am Ende? 👇
 
 # Bausteine für die Reel-Captions (siehe Erklärung oben bei REELS).
 # Gruppen dürfen beliebig viele Sätze haben. Neue Gruppe: Namen + Sätze anhängen.
@@ -219,3 +305,17 @@ youtube:
   hashtags_anhaengen: false
   impressum_zeile: false
   impressum_url: "https://9xklug.github.io"
+
+# ------------------------------------------------------------
+#  FACEBOOK-SEITE 9x KLUG (seit 07.11.2026)
+#  Facebook hängt an Instagram: Jedes Reel, das auf Instagram gepostet wird, geht im selben
+#  Lauf auch als Reel auf die Facebook-Seite. Karussells nie. Ein Facebook-Fehler stoppt nie Instagram.
+#  Text = Zeile aus der Textdatei des Reels (falls vorhanden) + facebook_text des Typs (siehe oben bei den Reels).
+#  Schlüssel und Seiten-Nummer stehen als GitHub-Secrets FB_PAGE_TOKEN und FB_PAGE_ID.
+# ------------------------------------------------------------
+facebook:
+  # true = Reels gehen automatisch auch auf Facebook. false = aus (Instagram läuft normal weiter).
+  # Erst auf true stellen, wenn test-facebook geklappt hat.
+  aktiv: false
+  # Version der Facebook-Schnittstelle (nur ändern, wenn Facebook eine alte Version abschaltet)
+  api_version: "v25.0"
