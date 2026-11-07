@@ -316,6 +316,6 @@ youtube:
 facebook:
   # true = Reels gehen automatisch auch auf Facebook. false = aus (Instagram läuft normal weiter).
   # Erst auf true stellen, wenn test-facebook geklappt hat.
-  aktiv: false
+  aktiv: true
   # Version der Facebook-Schnittstelle (nur ändern, wenn Facebook eine alte Version abschaltet)
   api_version: "v25.0"
