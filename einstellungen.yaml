@@ -12,7 +12,7 @@ pausiert: false
 aktiv_ab: 2026-10-19
 
 # Wann was gepostet wird (Uhrzeit Berlin). Beliebig viele Zeilen möglich.
-# typ ist entweder: reel  oder  karussell
+# typ ist entweder: reel  oder  karussell  oder  raetsel (Rätsel-Reels ohne Lösung, siehe unten)
 # tage (optional): nur an diesen Wochentagen. Ohne tage = jeden Tag.
 zeitplan:
   - zeit: "10:30"
@@ -20,6 +20,8 @@ zeitplan:
   - zeit: "14:30"
     typ: karussell
     tage: [Sa]
+  - zeit: "21:00"
+    typ: raetsel
 
 # Wird ein Termin verpasst (z. B. Störung bei GitHub), wird höchstens
 # so viele Stunden später noch nachgeholt. Danach fällt er aus.
@@ -263,6 +265,51 @@ extra_termine:
       Bei „Wer bin ich?“ zählt, wie wenige Hinweise du brauchst.
 
       Na, beim ersten Hinweis oder erst ganz am Ende? 👇
+
+# ------------------------------------------------------------
+#  RÄTSEL-REELS OHNE LÖSUNG (seit 07.11.2026)
+#  Eigene Reihe, getrennt von den anderen Reels und den Karussells.
+#  Wann: Zeile mit typ: raetsel im zeitplan oben (21:00, jeden Tag).
+#  Wo:   reels/Ohne Lösung/<Art>/  (Art = Name wie unter rhythmus)
+#        Pro Reel: die MP4 und die _Caption.txt aus dem Reel-Studio (Namen nicht ändern).
+#        Dazu die Übersicht-CSV aus dem Rätsel-Tool (Uebersicht_B….csv) in den Ordner der Art legen.
+#  Caption: Die _Caption.txt wird komplett übernommen (Instagram und Facebook).
+#           Es bleiben nur die ersten hashtags_max Hashtags (Instagram erlaubt 5).
+#           Fehlt die Datei, ist sie leer oder zu lang: Das Reel wird übersprungen,
+#           das nächste derselben Art kommt dran, und du bekommst eine Mail.
+#  Facebook: gleicher Text, aber ohne die Zeilen, die etwas aus facebook_zeilen_weglassen enthalten.
+#  YouTube: für diese Reihe noch nicht eingerichtet.
+#  Lösung: Autopost sucht das Reel in der Übersicht-CSV (über Rätselart, Batch-Kürzel und Nummer,
+#          z. B. Zahnraeder_B1107-1404_01) und schreibt die Antwort in gepostet.csv, Spalte Lösung.
+#          Wird nirgends gepostet. Nicht gefunden = "nicht gefunden", das Reel geht trotzdem raus.
+#  Kontrolle: Vorschau laufen lassen. status/captions_reels.csv zeigt jedes Rätsel-Reel mit Caption,
+#             Facebook-Text und gefundener Lösung.
+# ------------------------------------------------------------
+raetsel_reels:
+  ordner: Ohne Lösung
+  hashtags_max: 5
+  facebook_zeilen_weglassen:
+    - "@9xklug_raetsel"
+  # Titelbild aus dem Video: Zeitpunkt und Ausschnitt fürs Profil-Raster
+  # (titelbild_oben 65 = Rätselbild aus dem Reel-Studio mittig im 3:4-Raster)
+  titelbild_sekunde: 1
+  titelbild_oben: 65
+  # Reihenfolge der Arten (der Reihe nach, dann wieder von vorn).
+  # Zum Umsortieren einfach die Zeilen verschieben. Name = Ordnername.
+  rhythmus:
+    - Buchstabenreihe
+    - Gedrehte Figur
+    - Minensuche
+    - Papierfalten
+    - Quadrate zählen
+    - Streichhölzer
+    - Symbolrätsel
+    - Würfelnetz
+    - Würfeltürme
+    - Zahlenmauer
+    - Zahlenreihe
+    - Zahlenschloss
+    - Zahnräder
 
 # Bausteine für die Reel-Captions (siehe Erklärung oben bei REELS).
 # Gruppen dürfen beliebig viele Sätze haben. Neue Gruppe: Namen + Sätze anhängen.

@@ -2,6 +2,8 @@
 """9x KLUG Autopost: postet Karussells und Reels automatisch auf Instagram
 und lädt die Reels zusätzlich als YouTube Shorts hoch (seit 03.11.2026, Schalter youtube -> aktiv)
 und als Reels auf die Facebook-Seite 9x KLUG (seit 07.11.2026, Schalter facebook -> aktiv).
+Seit 07.11.2026 zusätzlich eine eigene Reihe "Rätsel-Reels ohne Lösung" (zeitplan typ: raetsel,
+Abschnitt raetsel_reels in einstellungen.yaml).
 
 Befehle:
   python autopost.py prepare [--test reel|karussell]  -> legt fällige Medien in _site/ ab
@@ -113,7 +115,7 @@ def save_status(st):
 GEPOSTET_CSV = ROOT / "status" / "gepostet.csv"
 GEPLANT_CSV = ROOT / "status" / "geplant.csv"
 CSV_KOPF = ["Datum", "Uhrzeit", "Typ", "Art", "Datei/Ordner", "Caption-Anfang", "Instagram-Link", "Test", "YouTube",
-            "Facebook"]
+            "Facebook", "Lösung"]
 
 
 def _csv_lesen(path):
@@ -279,6 +281,173 @@ def pick_reel(cfg, last_type, pool):
     return None, None, "Keine Reels mehr im Vorrat (oder nur noch ein einziger Typ). Bitte nachlegen."
 
 
+# ---------------------------------------------------------------- Rätsel-Reels ohne Lösung (seit 07.11.2026)
+# Eigene Reihe, getrennt von den anderen Reels und den Karussells (Termin im zeitplan mit typ: raetsel).
+# - Ordner: reels/<raetsel_reels -> ordner>/<Art>/ (z. B. reels/Ohne Lösung/Zahnräder/)
+# - Die Arten kommen der Reihe nach dran (raetsel_reels -> rhythmus). Ist eine Art leer, kommt die nächste + Mail.
+# - Caption = komplette Datei <Video>_Caption.txt aus dem Reel-Studio, nur die ersten hashtags_max Hashtags
+#   bleiben (Instagram-Grenze). Fehlt die Datei, ist sie leer oder zu lang: Reel wird übersprungen + Mail.
+# - Facebook: gleicher Text ohne die Zeilen aus facebook_zeilen_weglassen.
+# - YouTube: für diese Reihe noch nicht eingerichtet (Spalte YouTube: "aus").
+# - Lösung: aus der Übersicht-CSV des Rätsel-Tools im Ordner der Art (Spalte Lösung in gepostet.csv).
+#   Nur für dich, sie wird nirgends gepostet.
+RR_STANDARD_ORDNER = "Ohne Lösung"
+
+
+def rr_cfg(cfg):
+    return cfg.get("raetsel_reels") or {}
+
+
+def rr_arten(cfg):
+    return [str(a).strip() for a in (rr_cfg(cfg).get("rhythmus") or []) if str(a or "").strip()]
+
+
+def rr_ordnername(cfg):
+    return str(rr_cfg(cfg).get("ordner") or RR_STANDARD_ORDNER).strip()
+
+
+def ist_raetsel_quelle(cfg, quelle):
+    """True, wenn die Datei (reels/<ordner>/<Art>/<Video>) zur Rätsel-Reihe gehört."""
+    teile = str(quelle).split("/")
+    return len(teile) >= 4 and teile[0] == "reels" and norm(teile[1]) == norm(rr_ordnername(cfg))
+
+
+def raetsel_files(cfg, st):
+    """dict Art-key -> noch nicht gepostete Videos (sortiert)."""
+    done = set(st["gepostet"])
+    pool = {norm(a): [] for a in rr_arten(cfg)}
+    if not REEL_DIR.exists():
+        return pool
+    basis = [d for d in REEL_DIR.iterdir() if d.is_dir() and norm(d.name) == norm(rr_ordnername(cfg))]
+    if not basis:
+        return pool
+    for d in basis[0].iterdir():
+        if d.is_dir() and norm(d.name) in pool:
+            vids = sorted([f for f in d.iterdir() if f.suffix.lower() in {".mp4", ".mov"}],
+                          key=lambda p: natkey(p.name))
+            pool[norm(d.name)] = [v for v in vids if rel(v) not in done]
+    return pool
+
+
+def _aufraeumen(text):
+    """Leerzeichen am Zeilenende und doppelte Leerzeichen weg, höchstens eine Leerzeile am Stück."""
+    lines = [re.sub(r"[ \t]{2,}", " ", l).rstrip() for l in str(text).replace("\r\n", "\n").split("\n")]
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
+
+
+def hashtags_kuerzen(text, maximal):
+    """Behält nur die ersten <maximal> Hashtags (Reihenfolge wie in der Datei)."""
+    zaehler = [0]
+
+    def ersetzen(m):
+        zaehler[0] += 1
+        return m.group(0) if zaehler[0] <= maximal else ""
+    return HASHTAG_RE.sub(ersetzen, text)
+
+
+def rr_caption_datei(video):
+    for p in video.parent.iterdir():
+        if p.suffix.lower() == ".txt" and norm(p.stem) == norm(video.stem + "_Caption"):
+            return p
+    return None
+
+
+def rr_caption(cfg, video):
+    """Instagram-Caption eines Rätsel-Reels. Gibt (caption, grund) zurück; caption None = nicht postbar."""
+    datei = rr_caption_datei(video)
+    if not datei:
+        return None, f"Caption-Datei {video.stem}_Caption.txt fehlt"
+    try:
+        maximal = int(rr_cfg(cfg).get("hashtags_max", 5))
+    except (TypeError, ValueError):
+        maximal = 5
+    text = _aufraeumen(hashtags_kuerzen(lies_text(datei), maximal))
+    if not HASHTAG_RE.sub("", text).strip():
+        return None, f"Caption-Datei {datei.name} ist leer (oder enthält nur Hashtags)"
+    if len(text) > CAPTION_MAX:
+        return None, f"Caption in {datei.name} ist länger als {CAPTION_MAX} Zeichen"
+    return text, None
+
+
+def rr_fb_text(cfg, video):
+    """Facebook-Text eines Rätsel-Reels: Instagram-Caption ohne die Zeilen aus facebook_zeilen_weglassen."""
+    cap, grund = rr_caption(cfg, video)
+    if not cap:
+        return None, grund
+    weg = [norm(w) for w in (rr_cfg(cfg).get("facebook_zeilen_weglassen") or []) if str(w or "").strip()]
+    text = _aufraeumen("\n".join(l for l in cap.split("\n") if not any(w in norm(l) for w in weg)))
+    if not HASHTAG_RE.sub("", text).strip():
+        return None, f"Facebook-Text für {video.name} wäre leer"
+    return text, None
+
+
+def _csv_lesen_flexibel(path):
+    import csv
+    import io
+    raw = path.read_bytes()
+    for enc in ("utf-8-sig", "cp1252"):
+        try:
+            return list(csv.reader(io.StringIO(raw.decode(enc), newline=""), delimiter=";"))
+        except UnicodeDecodeError:
+            continue
+    return []
+
+
+RR_SCHLUESSEL = re.compile(r"^(.+?_B\d{4}-\d{4}_\d+)_", re.IGNORECASE)
+
+
+def rr_loesung(video):
+    """Antwort aus der Übersicht-CSV des Rätsel-Tools im Ordner der Art.
+    Zuordnung über Rätselart, Batch-Kürzel und Nummer (z. B. Zahnraeder_B1107-1404_01), die im
+    Reel-Namen genauso vorkommen. Gibt 'nicht gefunden' zurück, wenn keine Zeile passt."""
+    name = "_" + norm(video.stem) + "_"
+    csvs = sorted([p for p in video.parent.iterdir() if p.suffix.lower() == ".csv"], key=lambda p: natkey(p.name))
+    for p in csvs:
+        try:
+            hole_dateien([p])
+            zeilen = _csv_lesen_flexibel(p)
+        except Exception as fehler:
+            print("Übersicht nicht lesbar:", p.name, fehler)
+            continue
+        if not zeilen:
+            continue
+        kopf = [norm(k) for k in zeilen[0]]
+        if "antwort" not in kopf or "datei_aufgabe" not in kopf:
+            continue
+        i_a, i_d = kopf.index("antwort"), kopf.index("datei_aufgabe")
+        for z in zeilen[1:]:
+            if len(z) <= max(i_a, i_d):
+                continue
+            m = RR_SCHLUESSEL.match(z[i_d].strip())
+            if m and "_" + norm(m.group(1)) + "_" in name:
+                return z[i_a].strip() or "nicht gefunden"
+    return "nicht gefunden"
+
+
+def pick_raetsel(cfg, last_art, pool):
+    """Arten der Reihe nach. Gibt (art, video, caption, hinweise) zurück.
+    Reels ohne gültige Caption-Datei werden übersprungen (mit Hinweis), dann kommt das nächste derselben Art.
+    Ist eine Art leer, kommt die nächste Art."""
+    arten = rr_arten(cfg)
+    if not arten:
+        return None, None, None, ["Rätsel-Termin, aber unter raetsel_reels -> rhythmus steht keine Art."]
+    keys = [norm(a) for a in arten]
+    start = (keys.index(norm(last_art)) + 1) if last_art and norm(last_art) in keys else 0
+    heute = arten[start % len(arten)]
+    hinweise = []
+    for step in range(len(arten)):
+        art = arten[(start + step) % len(arten)]
+        for video in pool.get(norm(art), []):
+            cap, grund = rr_caption(cfg, video)
+            if cap:
+                if step:
+                    hinweise.insert(0, f"Kein Rätsel-Reel mehr für '{heute}'. Stattdessen gepostet: '{art}'. "
+                                       "Bitte nachlegen.")
+                return art, video, cap, hinweise
+            hinweise.append(f"Rätsel-Reel {rel(video)} übersprungen: {grund}.")
+    return None, None, None, hinweise + ["Keine Rätsel-Reels ohne Lösung mehr im Vorrat. Bitte nachlegen."]
+
+
 # ---------------------------------------------------------------- Medien
 def to_jpeg(src, dst, fit_feed=True):
     from PIL import Image
@@ -408,8 +577,13 @@ def _ffmpeg():
         return None
 
 
-def titelbild_aus_video(video, sekunde, ziel):
-    """Baut das Titelbild nach ziel (JPG). Gibt None zurück, wenn alles geklappt hat, sonst den Grund."""
+def titelbild_aus_video(video, sekunde, ziel, oben=0):
+    """Baut das Titelbild nach ziel (JPG). Gibt None zurück, wenn alles geklappt hat, sonst den Grund.
+    oben = ab welcher Pixelzeile (bei 1080x1920) der 3:4-Ausschnitt fürs Profil-Raster beginnt (Standard 0)."""
+    try:
+        oben = max(0, min(480, int(oben or 0)))
+    except (TypeError, ValueError):
+        return f"titelbild_oben '{oben}' ist keine Zahl"
     try:
         sekunde = float(sekunde)
     except (TypeError, ValueError):
@@ -433,7 +607,7 @@ def titelbild_aus_video(video, sekunde, ziel):
         return f"Video ist nicht im Format 9:16 ({w}x{h})"
     img = img.resize((1080, 1920), Image.LANCZOS)
     titel = Image.new("RGB", (1080, 1920), img.getpixel((8, 960)))  # Randfarbe des Reels
-    titel.paste(img.crop((0, 0, 1080, 1440)), (0, 240))
+    titel.paste(img.crop((0, oben, 1080, oben + 1440)), (0, 240))
     titel.save(ziel, "JPEG", quality=92)
     return None
 
@@ -480,6 +654,24 @@ def build(item_type, cfg, st, day, test=False, extra=None):
         text = caption_text(post)
         caption = (text + "\n\n" if text else "") + (entry.get("hashtags") or cfg["karussell_hashtags"])
         plan = {"typ": "karussell", "art": entry["name"], "quelle": rel(post), "bilder": files, "caption": caption}
+    elif item_type == "raetsel":
+        art, video, caption, hinweise = pick_raetsel(cfg, st.get("letzte_raetsel_art"), raetsel_files(cfg, st))
+        hinweis = " ".join(hinweise) or None
+        if not video:
+            return None, hinweis
+        vname = f"{stamp}_reel{video.suffix.lower()}"
+        hole_dateien([video])
+        shutil.copy(video, SITE / vname)
+        rc = rr_cfg(cfg)
+        cname = f"{stamp}_cover.jpg"
+        grund = titelbild_aus_video(SITE / vname, rc.get("titelbild_sekunde", 1), SITE / cname,
+                                    oben=rc.get("titelbild_oben", 0))
+        if grund:
+            cname = None
+            hinweis = " ".join(h for h in (hinweis, f"Titelbild für {rel(video)} nicht möglich ({grund}). "
+                                                    "Instagram nimmt sein Standardbild.") if h)
+        plan = {"typ": "reel", "raetsel": True, "art": art, "quelle": rel(video), "video": vname,
+                "cover": cname, "caption": caption, "loesung": rr_loesung(video)}
     else:
         if extra:
             items = reel_files(cfg, st, [extra])[norm(extra["ordner"])]
@@ -737,17 +929,21 @@ def _als_gepostet(plan, st, link, hinweis=""):
     _csv_kopf_aktualisieren()
     write_csv(GEPOSTET_CSV, CSV_KOPF, [[jetzt.strftime("%d.%m.%Y"), jetzt.strftime("%H:%M"),
               "Reel" if plan["typ"] == "reel" else "Karussell", plan["art"], kurzname(plan["quelle"]),
-              cap[:120], link, test, yt, fb]], append=True)
+              cap[:120], link, test, yt, fb, plan.get("loesung", "")]], append=True)
 
     st["gepostet"].append(plan["quelle"])
     if plan.get("termin"):
         st["termine_erledigt"].append(plan["termin"])
-    if plan["typ"] == "reel" and not plan.get("extra"):
+    if plan.get("raetsel"):
+        if not plan.get("test"):
+            st["letzte_raetsel_art"] = plan["art"]
+    elif plan["typ"] == "reel" and not plan.get("extra"):
         st["letzter_reel_typ"] = plan["art"]
     if plan["typ"] == "karussell" and not plan.get("extra") and not plan.get("test"):
         st["letzte_karussell_art"] = plan["art"]
     st["verlauf"].append({"zeit": dt.datetime.now(TZ).isoformat(timespec="minutes"), "typ": plan["typ"],
-                          "art": plan["art"], "quelle": plan["quelle"], "test": plan.get("test", False)})
+                          "art": plan["art"], "quelle": plan["quelle"], "test": plan.get("test", False),
+                          **({"raetsel": True} if plan.get("raetsel") else {})})
     st["termine_erledigt"] = st["termine_erledigt"][-200:]
     save_status(st)
     try:
@@ -952,6 +1148,9 @@ def _yt_versuchen(cfg, st, quelle, art):
     if (yts.get(quelle) or {}).get("status") == "ok":
         print("Schon auf YouTube, wird nicht nochmal hochgeladen:", quelle)
         return True
+    if ist_raetsel_quelle(cfg, quelle):
+        print("YouTube ist für die Rätsel-Reels ohne Lösung noch nicht eingerichtet:", quelle)
+        return False
     entry = yt_eintrag(cfg, art)
     video = MEDIA_ROOT / quelle
     name = kurzname(quelle)
@@ -1021,6 +1220,12 @@ def cmd_youtube():
     if quelle not in st["gepostet"]:
         print("Reel ist nicht auf Instagram gepostet, nichts für YouTube.")
         return
+    if ist_raetsel_quelle(cfg, quelle):
+        st.setdefault("youtube", {}).setdefault(quelle, {"status": "aus"})
+        save_status(st)
+        csv_youtube_eintragen(quelle, "aus (Rätsel-Reels: YouTube noch nicht eingerichtet)")
+        print("Rätsel-Reel ohne Lösung: YouTube ist dafür noch nicht eingerichtet.")
+        return
     if not yt_cfg(cfg).get("aktiv"):
         st.setdefault("youtube", {}).setdefault(quelle, {"status": "aus"})
         save_status(st)
@@ -1067,7 +1272,8 @@ def cmd_youtube_test():
     """Nachweis fürs Prüfungsformular: lädt das zuletzt auf Instagram gepostete Reel PRIVAT hoch.
     Zählt nicht als echter Upload (das Reel kann später ganz normal hochgeladen werden)."""
     cfg, st = load_cfg(), load_status()
-    reels = [v for v in st.get("verlauf", []) if v.get("typ") == "reel" and not v.get("test")]
+    reels = [v for v in st.get("verlauf", []) if v.get("typ") == "reel" and not v.get("test")
+             and not ist_raetsel_quelle(cfg, v.get("quelle", ""))]
     if not reels:
         print("Noch kein Reel auf Instagram gepostet, nichts zum Testen.")
         sys.exit(1)
@@ -1305,7 +1511,8 @@ def _fb_versuchen(cfg, st, quelle, art):
     if (fbs.get(quelle) or {}).get("status") == "unklar":
         print("Stand auf Facebook unklar, wird zur Sicherheit nicht nochmal gepostet:", quelle)
         return False
-    entry = yt_eintrag(cfg, art)
+    raetsel = ist_raetsel_quelle(cfg, quelle)
+    entry = None if raetsel else yt_eintrag(cfg, art)
     video = MEDIA_ROOT / quelle
     name = kurzname(quelle)
     jetzt = lambda: dt.datetime.now(TZ).isoformat(timespec="minutes")
@@ -1317,10 +1524,10 @@ def _fb_versuchen(cfg, st, quelle, art):
         warnung(mail)
         return False
 
-    if not entry:
+    if not raetsel and not entry:
         return fehlgeschlagen(f"Reel-Typ '{art}' nicht in einstellungen.yaml",
                               f"Facebook: Reel {name} nicht gepostet (Reel-Typ '{art}' nicht in einstellungen.yaml).")
-    text, hinweis = fb_text(cfg, entry, video)
+    text, hinweis = rr_fb_text(cfg, video) if raetsel else fb_text(cfg, entry, video)
     if hinweis:
         warnung("Facebook: " + hinweis)
     if not text:
@@ -1449,12 +1656,15 @@ def cmd_facebook_test():
         print("Noch kein Reel auf Instagram gepostet, nichts zum Testen.")
         sys.exit(1)
     quelle, art = reels[-1]["quelle"], reels[-1]["art"]
-    entry = yt_eintrag(cfg, art)
-    if not entry:
-        print(f"Reel-Typ '{art}' nicht in einstellungen.yaml gefunden.")
-        sys.exit(1)
     video = MEDIA_ROOT / quelle
-    text, hinweis = fb_text(cfg, entry, video)
+    if ist_raetsel_quelle(cfg, quelle):
+        text, hinweis = rr_fb_text(cfg, video)
+    else:
+        entry = yt_eintrag(cfg, art)
+        if not entry:
+            print(f"Reel-Typ '{art}' nicht in einstellungen.yaml gefunden.")
+            sys.exit(1)
+        text, hinweis = fb_text(cfg, entry, video)
     if hinweis:
         print("Hinweis:", hinweis)
     if not text:
@@ -1495,6 +1705,9 @@ def cmd_vorschau(days=14, ausgabe=True):
         xpool[id(e)] = list(f(cfg, st, [e])[norm(e["ordner"])])
     last = st.get("letzter_reel_typ")
     last_k = letzte_karussell_art(st)
+    rrpool = raetsel_files(cfg, st)
+    last_r = st.get("letzte_raetsel_art")
+    rc = rr_cfg(cfg)
     wd = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
     lines = ["| Datum | Zeit | Typ | Art | Datei | Caption (Reels) |", "|---|---|---|---|---|---|"]
     rows = []
@@ -1517,6 +1730,21 @@ def cmd_vorschau(days=14, ausgabe=True):
                 if item:
                     kpool[norm(e["ordner"])].remove(item)
                     last_k = e["name"]
+            elif slot["typ"] == "raetsel":
+                a, item, rcap, _ = pick_raetsel(cfg, last_r, rrpool)
+                art = f"{rr_ordnername(cfg)}: {a}" if a else "-"
+                datei = kurzname(rel(item)) if item else "KEIN VORRAT"
+                if item:
+                    rrpool[norm(a)].remove(item)
+                    last_r = a
+                    titel.append((f"{wd[day.weekday()]} {day:%d.%m.} {slot['zeit']}",
+                                  {"ordner": a, "titelbild_sekunde": rc.get("titelbild_sekunde", 1),
+                                   "titelbild_oben": rc.get("titelbild_oben", 0)}, item))
+                rcap = rcap or ""
+                lines.append(f"| {wd[day.weekday()]} {day:%d.%m.} | {slot['zeit']} | Rätsel-Reel | {art} | {datei} | "
+                             f"{' / '.join(l for l in rcap.splitlines() if l.strip())} |")
+                rows.append([day.strftime("%d.%m.%Y"), wd[day.weekday()], slot["zeit"], "Reel", art, datei, rcap])
+                continue
             else:
                 e, item, _ = pick_reel(cfg, last, rpool)
                 art = e["ordner"] if e else "-"
@@ -1536,6 +1764,10 @@ def cmd_vorschau(days=14, ausgabe=True):
         f"{e['name']}: {len(karussell_posts(cfg, st)[norm(e['ordner'])])}" for e in cfg["karussell_rhythmus"])]
     vorrat.append("**Vorrat Reels:** " + ", ".join(
         f"{e['ordner']}: {len(reel_files(cfg, st)[norm(e['ordner'])])}" for e in cfg["reel_rhythmus"]))
+    if rr_arten(cfg):
+        voll = raetsel_files(cfg, st)
+        vorrat.append(f"**Vorrat Rätsel-Reels ({rr_ordnername(cfg)}):** " + ", ".join(
+            f"{a}: {len(voll[norm(a)])}" for a in rr_arten(cfg)))
     if extras:
         vorrat.append("**Vorrat Zusatztermine:** " + ", ".join(
             f"{e.get('name', e['ordner'])}: {len((karussell_posts if e['typ'] == 'karussell' else reel_files)(cfg, st, [e])[norm(e['ordner'])])}"
@@ -1587,7 +1819,7 @@ def titelbild_vorschau(titel):
             grund = "keine titelbild_sekunde"
             if e.get("titelbild_sekunde") is not None:
                 hole_dateien([video])
-                grund = titelbild_aus_video(video, e["titelbild_sekunde"], ziel)
+                grund = titelbild_aus_video(video, e["titelbild_sekunde"], ziel, oben=e.get("titelbild_oben", 0))
                 if MEDIA_ROOT != ROOT:
                     video.write_bytes(b"")  # Platz sparen: Video wieder leeren
             if grund:
@@ -1636,10 +1868,23 @@ def caption_liste(cfg, st):
             fb, fb_hinweis = _fb_text_sicher(cfg, e, v)
             rows.append([e["ordner"], kurzname(rel(v)), "Textdatei" if txt else "fester Text", cap, hinweis or "",
                          yt_titel or "(kein gültiger Titel)", yt_beschr, yt_hinweis or "",
-                         fb or "(kein Text möglich)", fb_hinweis or ""])
+                         fb or "(kein Text möglich)", fb_hinweis or "", ""])
+    # Rätsel-Reels ohne Lösung: komplette Caption aus der Caption-Datei, Lösung aus der Übersicht
+    for a, vids in raetsel_files(cfg, st).items():
+        for v in vids:
+            try:
+                cap, grund = rr_caption(cfg, v)
+                fb, fb_grund = rr_fb_text(cfg, v)
+                loesung = rr_loesung(v)
+            except Exception as fehler:
+                cap, grund, fb, fb_grund, loesung = None, f"Fehler: {fehler}", None, "", ""
+            rows.append([f"{rr_ordnername(cfg)}/{v.parent.name}", v.name, "Caption-Datei",
+                         cap or "(wird übersprungen)", grund or "",
+                         "(YouTube für Rätsel-Reels noch nicht eingerichtet)", "", "",
+                         fb or "(kein Text möglich)", fb_grund or "", loesung])
     write_csv(CAPTIONS_CSV, ["Typ", "Datei", "Zeile 1 aus", "Caption", "Hinweis",
                              "YouTube-Titel", "YouTube-Beschreibung", "YouTube-Hinweis",
-                             "Facebook-Text", "Facebook-Hinweis"], rows)
+                             "Facebook-Text", "Facebook-Hinweis", "Lösung"], rows)
     print(f"Caption-Liste: {len(rows)} Reels -> status/captions_reels.csv")
 
 
@@ -1647,7 +1892,7 @@ if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "vorschau"
     if cmd == "prepare":
         t = sys.argv[3] if len(sys.argv) > 3 and sys.argv[2] == "--test" else None
-        cmd_prepare(t if t in ("reel", "karussell") else None)
+        cmd_prepare(t if t in ("reel", "karussell", "raetsel") else None)
     elif cmd == "publish":
         cmd_publish()
     elif cmd == "youtube":
