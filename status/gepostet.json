@@ -44,7 +44,8 @@
     "reels/Wer bin ich/9x_KLUG_WerBinIch_Astrid_Lindgren.mp4",
     "reels/Ausreißer/9x_KLUG_Reel_Ausreisser_9_6_char (1).mp4",
     "karussells/9x_KLUG_Gedrehte_Figur_2026-10-17/Post_01_Gedrehte_Figur",
-    "reels/Ohne Lösung/Buchstabenreihe/9x_KLUG_BildReel_Buchstabenreihe_B1107-1423_01_sehr-leicht_A.mp4"
+    "reels/Ohne Lösung/Buchstabenreihe/9x_KLUG_BildReel_Buchstabenreihe_B1107-1423_01_sehr-leicht_A.mp4",
+    "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_orangen_Linien_an.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -90,9 +91,10 @@
     "2026-11-06_17:00_reel_extra_wer bin ich",
     "2026-11-07_10:30_reel",
     "2026-11-07_14:30_karussell",
-    "2026-11-07_21:00_raetsel"
+    "2026-11-07_21:00_raetsel",
+    "2026-11-08_10:30_reel"
   ],
-  "letzter_reel_typ": "Ausreißer",
+  "letzter_reel_typ": "optische täuschung",
   "token_erneuert": "2026-11-02",
   "verlauf": [
     {
@@ -410,6 +412,13 @@
       "quelle": "reels/Ohne Lösung/Buchstabenreihe/9x_KLUG_BildReel_Buchstabenreihe_B1107-1423_01_sehr-leicht_A.mp4",
       "test": false,
       "raetsel": true
+    },
+    {
+      "zeit": "2026-11-08T11:16+01:00",
+      "typ": "reel",
+      "art": "optische täuschung",
+      "quelle": "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_orangen_Linien_an.mp4",
+      "test": false
     }
   ],
   "fehlversuche": {
@@ -448,6 +457,9 @@
     },
     "reels/Ohne Lösung/Buchstabenreihe/9x_KLUG_BildReel_Buchstabenreihe_B1107-1423_01_sehr-leicht_A.mp4": {
       "status": "aus"
+    },
+    "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_orangen_Linien_an.mp4": {
+      "status": "aus"
     }
   },
   "facebook_tests": [
@@ -469,6 +481,12 @@
       "id": "1110527108416233",
       "link": "https://www.facebook.com/reel/1110527108416233/",
       "zeit": "2026-11-07T23:54+01:00"
+    },
+    "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_orangen_Linien_an.mp4": {
+      "status": "ok",
+      "id": "1478181114251583",
+      "link": "https://www.facebook.com/reel/1478181114251583/",
+      "zeit": "2026-11-08T11:16+01:00"
     }
   },
   "letzte_raetsel_art": "Buchstabenreihe"
