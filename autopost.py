@@ -4,6 +4,7 @@ und lädt die Reels zusätzlich als YouTube Shorts hoch (seit 03.11.2026, Schalt
 und als Reels auf die Facebook-Seite 9x KLUG (seit 07.11.2026, Schalter facebook -> aktiv).
 Seit 07.11.2026 zusätzlich eine eigene Reihe "Rätsel-Reels ohne Lösung" (zeitplan typ: raetsel,
 Abschnitt raetsel_reels in einstellungen.yaml).
+Seit 08.11.2026 kann jeder Termin mit "plattformen: [...]" festlegen, wo er läuft (z. B. Suchsel nur auf Facebook).
 
 Befehle:
   python autopost.py prepare [--test reel|karussell]  -> legt fällige Medien in _site/ ab
@@ -211,6 +212,52 @@ def extra_termine(cfg):
 def an_tag(extra, day):
     tage = [norm(t)[:2] for t in (extra.get("tage") or WOCHENTAGE)]
     return WOCHENTAGE[day.weekday()] in tage
+
+
+# Plattformen pro Termin (seit 08.11.2026): Ein Termin (zeitplan oder extra_termine) kann mit
+# "plattformen: [facebook]" festlegen, wo er läuft. Ohne die Zeile: wie bisher überall
+# (Instagram, danach Facebook und YouTube, soweit dort aktiv).
+PLATTFORMEN = ("instagram", "facebook", "youtube")
+PLATTFORM_NAMEN = {"instagram": "Instagram", "facebook": "Facebook", "youtube": "YouTube"}
+
+
+def termin_plattformen(eintrag):
+    """Gibt (Liste der Plattformen, Fehlertext) zurück. Fehlt die Zeile: alle Plattformen.
+    Ein Tippfehler darf nie dazu führen, dass etwas an der falschen Stelle gepostet wird:
+    unbekannte Namen oder eine leere Liste sind ein Fehler (der Termin fällt dann aus + Mail)."""
+    wert = (eintrag or {}).get("plattformen")
+    if wert is None:
+        return list(PLATTFORMEN), None
+    if isinstance(wert, str):
+        wert = [wert]
+    if not isinstance(wert, list) or not wert:
+        return None, "plattformen muss eine Liste sein, z. B. plattformen: [facebook]"
+    namen = [norm(w) for w in wert]
+    falsch = [w for w in namen if w not in PLATTFORMEN]
+    if falsch:
+        return None, (f"Unbekannte Plattform {', '.join(falsch)} (erlaubt: instagram, facebook, youtube)")
+    liste = [p for p in PLATTFORMEN if p in namen]
+    typ = norm((eintrag or {}).get("typ") or "")
+    if typ == "karussell" and "instagram" not in liste:
+        return None, "Karussells gibt es nur auf Instagram, plattformen muss instagram enthalten"
+    if typ == "raetsel" and not ({"instagram", "facebook"} & set(liste)):
+        return None, "Rätsel-Reels ohne Lösung laufen (noch) nicht auf YouTube, plattformen muss instagram oder facebook enthalten"
+    return liste, None
+
+
+def plattformen_aktiv(cfg, plattformen):
+    """Welche der Plattformen eines Termins gerade wirklich posten (Instagram immer, die anderen nur bei aktiv)."""
+    aktiv = {"instagram": True, "facebook": bool(fb_cfg(cfg).get("aktiv")), "youtube": bool(yt_cfg(cfg).get("aktiv"))}
+    return [p for p in plattformen if aktiv[p]]
+
+
+def plattform_hinweis(plattformen):
+    """Kurztext für die Vorschau, z. B. 'nur Facebook'. Leer, wenn der Termin überall läuft."""
+    if plattformen is None:
+        return "FEHLER bei plattformen"
+    if list(plattformen) == list(PLATTFORMEN):
+        return ""
+    return "nur " + " + ".join(PLATTFORM_NAMEN[p] for p in plattformen)
 
 
 def karussell_posts(cfg, st, entries=None):
@@ -714,7 +761,8 @@ def due_slot(cfg, st, now):
         return None
     erledigt = set(st["termine_erledigt"])
     slots = [dict(s, extra=None) for s in cfg["zeitplan"] if an_tag(s, now.date())]
-    slots += [{"zeit": e["zeit"], "typ": e["typ"], "extra": e} for e in extra_termine(cfg) if an_tag(e, now.date())]
+    slots += [{"zeit": e["zeit"], "typ": e["typ"], "extra": e, "plattformen": e.get("plattformen")}
+              for e in extra_termine(cfg) if an_tag(e, now.date())]
     for slot in sorted(slots, key=lambda s: str(s["zeit"])):
         h, m = map(int, str(slot["zeit"]).split(":"))
         t = now.replace(hour=h, minute=m, second=0, microsecond=0)
@@ -725,7 +773,7 @@ def due_slot(cfg, st, now):
         if st.get("fehlversuche", {}).get(key, 0) >= 3:
             continue
         if key not in erledigt and 0 <= late <= cfg.get("max_verspaetung_stunden", 6):
-            return {"key": key, "typ": slot["typ"], "extra": slot["extra"]}
+            return {"key": key, "typ": slot["typ"], "extra": slot["extra"], "plattformen": slot.get("plattformen")}
     return None
 
 
@@ -734,14 +782,27 @@ def cmd_prepare(test_type=None):
     now = dt.datetime.now(TZ)
     slot = {"key": None, "typ": test_type} if test_type else due_slot(cfg, st, now)
     plan = None
+    plattformen = list(PLATTFORMEN)
+    if slot and not test_type:
+        plattformen, fehler = termin_plattformen(slot)
+        if not fehler and not plattformen_aktiv(cfg, plattformen):
+            fehler = (f"Der Termin soll nur auf {' + '.join(PLATTFORM_NAMEN[p] for p in plattformen)} laufen, "
+                      "das ist aber in einstellungen.yaml ausgeschaltet (aktiv: false)")
+        if fehler:
+            # Nichts posten und nichts aus dem Vorrat nehmen. Termin abhaken, damit nicht alle 15 Min. eine Mail kommt.
+            warnung(f"Termin {slot['key']} fällt aus: {fehler}. Nichts gepostet, der Vorrat bleibt unverändert.")
+            st["termine_erledigt"].append(slot["key"])
+            save_status(st)
+            slot = None
     if slot:
         plan, hinweis = build(slot["typ"], cfg, st, now.date(), test=bool(test_type), extra=slot.get("extra"))
         if hinweis:
             warnung(hinweis)
         if plan:
             plan["termin"] = slot["key"]
+            plan["plattformen"] = plattformen
             PLAN_FILE.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
-            print("Vorbereitet:", plan["typ"], plan["art"], plan["quelle"])
+            print("Vorbereitet:", plan["typ"], plan["art"], plan["quelle"], plattform_hinweis(plattformen))
         elif slot["key"]:
             st["termine_erledigt"].append(slot["key"])  # nichts zu posten -> Termin abhaken
             save_status(st)
@@ -864,8 +925,14 @@ def schon_online(uid, plan, st, minuten=None):
 
 
 def _publish(plan):
-    base = os.environ["PAGES_URL"].rstrip("/") + "/"
     st = load_status()
+    if "instagram" not in plan.get("plattformen", PLATTFORMEN):
+        # Termin ohne Instagram (z. B. plattformen: [facebook]): hier nichts posten, nur als "dran gewesen"
+        # eintragen. Facebook bzw. YouTube posten es in den nächsten Schritten desselben Laufs.
+        print("Termin ohne Instagram (" + plattform_hinweis(plan["plattformen"]) + "): auf Instagram wird nichts gepostet.")
+        _als_gepostet(plan, st, "– (nicht auf Instagram)")
+        return
+    base = os.environ["PAGES_URL"].rstrip("/") + "/"
     user = ig("GET", "me", fields="user_id,username")
     uid = user["user_id"]
     print("Poste auf @" + user.get("username", "?"))
@@ -920,6 +987,8 @@ def _publish(plan):
 def _als_gepostet(plan, st, link, hinweis=""):
     jetzt = dt.datetime.now(TZ)
     cap = " / ".join(l.strip() for l in plan["caption"].splitlines() if l.strip())
+    if "instagram" not in plan.get("plattformen", PLATTFORMEN):
+        cap = "(nicht auf Instagram, Text je Plattform siehe captions_reels.csv)"
     test = "ja" if plan.get("test") else ""
     if hinweis:
         test = (test + " " + hinweis).strip()
@@ -1225,6 +1294,12 @@ def cmd_youtube():
         save_status(st)
         csv_youtube_eintragen(quelle, "aus (Rätsel-Reels: YouTube noch nicht eingerichtet)")
         print("Rätsel-Reel ohne Lösung: YouTube ist dafür noch nicht eingerichtet.")
+        return
+    if "youtube" not in plan.get("plattformen", PLATTFORMEN):
+        st.setdefault("youtube", {}).setdefault(quelle, {"status": "aus"})
+        save_status(st)
+        csv_youtube_eintragen(quelle, "aus (Termin ohne YouTube)")
+        print("Dieser Termin läuft nicht auf YouTube (plattformen).")
         return
     if not yt_cfg(cfg).get("aktiv"):
         st.setdefault("youtube", {}).setdefault(quelle, {"status": "aus"})
@@ -1597,6 +1672,12 @@ def cmd_facebook():
     if quelle not in st["gepostet"]:
         print("Reel ist nicht auf Instagram gepostet, nichts für Facebook.")
         return
+    if "facebook" not in plan.get("plattformen", PLATTFORMEN):
+        st.setdefault("facebook", {}).setdefault(quelle, {"status": "aus"})
+        save_status(st)
+        csv_facebook_eintragen(quelle, "aus (Termin ohne Facebook)")
+        print("Dieser Termin läuft nicht auf Facebook (plattformen).")
+        return
     if not fb_cfg(cfg).get("aktiv"):
         st.setdefault("facebook", {}).setdefault(quelle, {"status": "aus"})
         save_status(st)
@@ -1715,24 +1796,36 @@ def cmd_vorschau(days=14, ausgabe=True):
     for d in range(days):
         day = start + dt.timedelta(days=d)
         slots = [dict(s, extra=None) for s in cfg["zeitplan"] if an_tag(s, day)]
-        slots += [{"zeit": e["zeit"], "typ": e["typ"], "extra": e} for e in extras if an_tag(e, day)]
+        slots += [{"zeit": e["zeit"], "typ": e["typ"], "extra": e, "plattformen": e.get("plattformen")}
+                  for e in extras if an_tag(e, day)]
         for slot in sorted(slots, key=lambda s: str(s["zeit"])):
+            pl, pl_fehler = termin_plattformen(slot)
+            if not pl_fehler and not plattformen_aktiv(cfg, pl):
+                pl_fehler = "ausgeschaltet"
+            if pl_fehler:
+                if not (day == jetzt.date() and str(slot["zeit"]) <= jetzt.strftime("%H:%M")):
+                    lines.append(f"| {wd[day.weekday()]} {day:%d.%m.} | {slot['zeit']} | {slot['typ']} | "
+                                 f"FÄLLT AUS (plattformen: {pl_fehler}) | | |")
+                    rows.append([day.strftime("%d.%m.%Y"), wd[day.weekday()], slot["zeit"], slot["typ"],
+                                 f"FÄLLT AUS (plattformen: {pl_fehler})", "", ""])
+                continue
+            nur = plattform_hinweis(pl)
             if day == jetzt.date() and str(slot["zeit"]) <= jetzt.strftime("%H:%M"):
                 continue  # heute schon vorbei
             if slot["extra"]:
                 e = slot["extra"]
                 items = xpool[id(e)]
                 item = items.pop(0) if items else None
-                art = e.get("name", e["ordner"]) + " (extra)"
+                art = e.get("name", e["ordner"]) + (f" (extra, {nur})" if nur else " (extra)")
             elif slot["typ"] == "karussell":
                 e, item, _ = pick_karussell(cfg, last_k, kpool)
-                art = e["name"] if e else "-"
+                art = (e["name"] if e else "-") + (f" ({nur})" if nur else "")
                 if item:
                     kpool[norm(e["ordner"])].remove(item)
                     last_k = e["name"]
             elif slot["typ"] == "raetsel":
                 a, item, rcap, _ = pick_raetsel(cfg, last_r, rrpool)
-                art = f"{rr_ordnername(cfg)}: {a}" if a else "-"
+                art = (f"{rr_ordnername(cfg)}: {a}" if a else "-") + (f" ({nur})" if nur else "")
                 datei = kurzname(rel(item)) if item else "KEIN VORRAT"
                 if item:
                     rrpool[norm(a)].remove(item)
@@ -1751,6 +1844,8 @@ def cmd_vorschau(days=14, ausgabe=True):
                 if item:
                     rpool[norm(e["ordner"])].remove(item)
                     last = e["ordner"]
+                if nur:
+                    art += f" ({nur})"
             datei = kurzname(rel(item)) if item else "KEIN VORRAT"
             cap = ""
             if item and slot["typ"] == "reel":

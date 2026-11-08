@@ -14,10 +14,18 @@ aktiv_ab: 2026-10-19
 # Wann was gepostet wird (Uhrzeit Berlin). Beliebig viele Zeilen möglich.
 # typ ist entweder: reel  oder  karussell  oder  raetsel (Rätsel-Reels ohne Lösung, siehe unten)
 # tage (optional): nur an diesen Wochentagen. Ohne tage = jeden Tag.
+# plattformen (optional, seit 08.11.2026): wo der Termin läuft, z. B. plattformen: [facebook].
+#   Erlaubt: instagram, facebook, youtube. Ohne plattformen = wie bisher überall
+#   (Instagram, danach Facebook und YouTube, soweit dort aktiv: true).
+#   Gilt auch für die Termine unter extra_termine. Tippfehler = Termin fällt aus + Mail.
+# Zeitplan seit 08.11.2026: zwei Posts pro Tag (16:30 und 21:00), nichts vor 16:30.
+#   16:30: Mo Fun Fact, Di Welches Jahr, Mi Reihe, Do Was verbindet sie, Fr Wer bin ich,
+#          Sa Karussell (Instagram) + Suchsel (nur Facebook), So Reihe.
 zeitplan:
-  - zeit: "10:30"
+  - zeit: "16:30"
     typ: reel
-  - zeit: "14:30"
+    tage: [Mi, So]
+  - zeit: "16:30"
     typ: karussell
     tage: [Sa]
   - zeit: "21:00"
@@ -106,7 +114,7 @@ karussell_rhythmus:
 #  Die Texte sind vorläufig und dürfen jederzeit ersetzt werden (danach Vorschau laufen lassen:
 #  status/captions_reels.csv zeigt in der Spalte Facebook-Text genau, was rausgeht).
 # ------------------------------------------------------------
-#  Fun Fact läuft seit 31.10.2026 nicht mehr in der Reihe, sondern fest Mo + So 14:30 (siehe extra_termine).
+#  Fun Fact läuft seit 31.10.2026 nicht mehr in der Reihe, sondern als fester Termin (seit 08.11.2026 Mo 16:30, siehe extra_termine).
 reel_rhythmus:
   - ordner: Entweder oder
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
@@ -182,8 +190,8 @@ reel_rhythmus:
 extra_termine:
   - typ: reel
     ordner: Fun Fact
-    tage: [Mo, So]
-    zeit: "14:30"
+    tage: [Mo]
+    zeit: "16:30"
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #funfact"
     hook: "Klingt ausgedacht, ist aber wahr."
     aufforderung: wissen
@@ -200,7 +208,7 @@ extra_termine:
   - typ: reel
     ordner: Welches Jahr
     tage: [Di]
-    zeit: "17:00"
+    zeit: "16:30"
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Das alles ist in einem einzigen Jahr passiert. Welches Jahr ist es?"
     aufforderung: raten
@@ -216,8 +224,9 @@ extra_termine:
       Na, Volltreffer oder Jahrzehnte daneben? 👇
   - typ: reel
     ordner: Suchsel
-    tage: [Mi]
-    zeit: "17:00"
+    tage: [Sa]
+    zeit: "16:30"
+    plattformen: [facebook]
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Findest du alle versteckten Wörter?"
     aufforderung: suchen
@@ -234,7 +243,7 @@ extra_termine:
   - typ: reel
     ordner: Was verbindet sie
     tage: [Do]
-    zeit: "17:00"
+    zeit: "16:30"
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Was haben sie gemeinsam? Kommst du drauf?"
     aufforderung: raten
@@ -251,7 +260,7 @@ extra_termine:
   - typ: reel
     ordner: Wer bin ich
     tage: [Fr]
-    zeit: "17:00"
+    zeit: "16:30"
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #werbinich"
     hook: "Drei Hinweise, eine Person aus der Geschichte. Wer bin ich?"
     aufforderung: raten
@@ -330,6 +339,7 @@ reel_caption:
 #  YOUTUBE SHORTS (seit 03.11.2026)
 #  YouTube hängt an Instagram: Jedes Reel, das auf Instagram gepostet wird, geht danach
 #  auch zu YouTube. Karussells nie. Ein YouTube-Fehler stoppt nie Instagram.
+#  Ausnahme (seit 08.11.2026): Termine mit plattformen ohne youtube (z. B. Suchsel) gehen nicht zu YouTube.
 #  Titel = Zeile 1 der Reel-Caption (wie oben), über 100 Zeichen: fester hook.
 #  Beschreibung = youtube_text des Typs (siehe oben bei den Reels) + schluss.
 # ------------------------------------------------------------
@@ -357,6 +367,8 @@ youtube:
 #  FACEBOOK-SEITE 9x KLUG (seit 07.11.2026)
 #  Facebook hängt an Instagram: Jedes Reel, das auf Instagram gepostet wird, geht im selben
 #  Lauf auch als Reel auf die Facebook-Seite. Karussells nie. Ein Facebook-Fehler stoppt nie Instagram.
+#  Ausnahme (seit 08.11.2026): Termine mit plattformen (z. B. Suchsel: plattformen: [facebook])
+#  laufen nur dort, wo es in der Liste steht.
 #  Text = Zeile aus der Textdatei des Reels (falls vorhanden) + facebook_text des Typs (siehe oben bei den Reels).
 #  Schlüssel und Seiten-Nummer stehen als GitHub-Secrets FB_PAGE_TOKEN und FB_PAGE_ID.
 # ------------------------------------------------------------
