@@ -46,7 +46,8 @@
     "karussells/9x_KLUG_Gedrehte_Figur_2026-10-17/Post_01_Gedrehte_Figur",
     "reels/Ohne Lösung/Buchstabenreihe/9x_KLUG_BildReel_Buchstabenreihe_B1107-1423_01_sehr-leicht_A.mp4",
     "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_orangen_Linien_an.mp4",
-    "reels/wahr oder falsch/9x_KLUG_Reel_WAHR_ODER_FALSCH_mond.mp4"
+    "reels/wahr oder falsch/9x_KLUG_Reel_WAHR_ODER_FALSCH_mond.mp4",
+    "reels/Ohne Lösung/Gedrehte Figur/9x_KLUG_BildReel_Gedrehte_Figur_B1107-1425_01_extrem-schwer_A.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -94,7 +95,8 @@
     "2026-11-07_14:30_karussell",
     "2026-11-07_21:00_raetsel",
     "2026-11-08_10:30_reel",
-    "2026-11-08_16:30_reel"
+    "2026-11-08_16:30_reel",
+    "2026-11-08_21:00_raetsel"
   ],
   "letzter_reel_typ": "wahr oder falsch",
   "token_erneuert": "2026-11-02",
@@ -428,6 +430,14 @@
       "art": "wahr oder falsch",
       "quelle": "reels/wahr oder falsch/9x_KLUG_Reel_WAHR_ODER_FALSCH_mond.mp4",
       "test": false
+    },
+    {
+      "zeit": "2026-11-08T21:10+01:00",
+      "typ": "reel",
+      "art": "Gedrehte Figur",
+      "quelle": "reels/Ohne Lösung/Gedrehte Figur/9x_KLUG_BildReel_Gedrehte_Figur_B1107-1425_01_extrem-schwer_A.mp4",
+      "test": false,
+      "raetsel": true
     }
   ],
   "fehlversuche": {
@@ -472,6 +482,9 @@
     },
     "reels/wahr oder falsch/9x_KLUG_Reel_WAHR_ODER_FALSCH_mond.mp4": {
       "status": "aus"
+    },
+    "reels/Ohne Lösung/Gedrehte Figur/9x_KLUG_BildReel_Gedrehte_Figur_B1107-1425_01_extrem-schwer_A.mp4": {
+      "status": "aus"
     }
   },
   "facebook_tests": [
@@ -505,7 +518,13 @@
       "id": "2540479183112344",
       "link": "https://www.facebook.com/reel/2540479183112344/",
       "zeit": "2026-11-08T16:49+01:00"
+    },
+    "reels/Ohne Lösung/Gedrehte Figur/9x_KLUG_BildReel_Gedrehte_Figur_B1107-1425_01_extrem-schwer_A.mp4": {
+      "status": "ok",
+      "id": "1110133851802456",
+      "link": "https://www.facebook.com/reel/1110133851802456/",
+      "zeit": "2026-11-08T21:10+01:00"
     }
   },
-  "letzte_raetsel_art": "Buchstabenreihe"
+  "letzte_raetsel_art": "Gedrehte Figur"
 }
