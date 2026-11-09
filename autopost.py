@@ -319,13 +319,56 @@ def pick_reel(cfg, last_type, pool):
     rhythm = cfg["reel_rhythmus"]
     keys = [norm(e["ordner"]) for e in rhythm]
     start = (keys.index(norm(last_type)) + 1) if last_type and norm(last_type) in keys else 0
+    hinweise = []
     for step in range(len(rhythm)):
         e = rhythm[(start + step) % len(rhythm)]
         if norm(e["ordner"]) == norm(last_type or ""):
             continue  # nie zweimal hintereinander derselbe Typ
-        if pool.get(norm(e["ordner"])):
-            return e, pool[norm(e["ordner"])][0], None
-    return None, None, "Keine Reels mehr im Vorrat (oder nur noch ein einziger Typ). Bitte nachlegen."
+        video, h = erstes_gueltiges_reel(cfg, e, pool.get(norm(e["ordner"])) or [])
+        hinweise += h
+        if video:
+            return e, video, " ".join(hinweise) or None
+    return None, None, " ".join(hinweise + ["Keine Reels mehr im Vorrat (oder nur noch ein einziger Typ). Bitte nachlegen."])
+
+
+# ---------------------------------------------------------------- Reihen-Typen mit Caption-Datei (seit 09.11.2026)
+# Steht beim Reel-Typ "caption_datei: true" (derzeit Entweder oder + Wissensfragen, beide ohne Auflösung
+# aus dem Reel-Studio), gilt für diesen Typ dasselbe wie für die Rätsel-Reels ohne Lösung:
+# - Instagram-Caption = komplette <Video>_Caption.txt, nur die ersten hashtags_max Hashtags (raetsel_reels)
+# - Facebook = gleicher Text ohne die Zeilen aus facebook_zeilen_weglassen (raetsel_reels)
+# - YouTube-Titel = erste Zeile der Caption-Datei (ohne Hashtags), Beschreibung = youtube_text des Typs
+# - Lösung = Inhalt der <Video>_Loesung.txt -> status/gepostet.csv, Spalte Lösung
+# - Fehlt die Caption-Datei, ist sie leer oder zu lang: Reel wird übersprungen (Mail), nächstes desselben Typs.
+def erstes_gueltiges_reel(cfg, entry, vids):
+    """Gibt (video, hinweise) zurück. Bei Typen mit caption_datei werden Reels ohne gültige Caption übersprungen."""
+    if not entry.get("caption_datei"):
+        return (vids[0] if vids else None), []
+    hinweise = []
+    for v in vids:
+        cap, grund = rr_caption(cfg, v)
+        if cap:
+            return v, hinweise
+        hinweise.append(f"Reel {rel(v)} übersprungen: {grund}.")
+    return None, hinweise
+
+
+def reihe_loesung(video):
+    """Inhalt der <Video>_Loesung.txt aus dem Reel-Studio (eine Zeile), sonst 'nicht gefunden'."""
+    for p in video.parent.iterdir():
+        if p.suffix.lower() == ".txt" and norm(p.stem) == norm(video.stem + "_Loesung"):
+            text = " / ".join(l.strip() for l in lies_text(p).splitlines() if l.strip())
+            return text or "nicht gefunden"
+    return "nicht gefunden"
+
+
+def caption_erste_zeile(cfg, video):
+    """Erste Textzeile der Caption-Datei ohne Hashtags (für den YouTube-Titel), sonst None."""
+    cap, _ = rr_caption(cfg, video)
+    for l in (cap or "").splitlines():
+        l = " ".join(HASHTAG_RE.sub("", l).split())
+        if l:
+            return l
+    return None
 
 
 # ---------------------------------------------------------------- Rätsel-Reels ohne Lösung (seit 07.11.2026)
@@ -568,6 +611,9 @@ def begleittext(video):
 
 def reel_caption(cfg, entry, video):
     """Baut die Caption für ein Reel. Gibt (caption, hinweis) zurück."""
+    if entry.get("caption_datei"):
+        cap, grund = rr_caption(cfg, video)
+        return (cap, None) if cap else ("(wird übersprungen)", grund)
     hashtags = str(entry.get("hashtags") or "").strip()
     typ = entry.get("name", entry["ordner"])
     rc = cfg.get("reel_caption") or {}
@@ -624,27 +670,38 @@ def _ffmpeg():
         return None
 
 
-def titelbild_aus_video(video, sekunde, ziel, oben=0):
+def titelbild_aus_video(video, sekunde, ziel, oben=0, vor_ende=None):
     """Baut das Titelbild nach ziel (JPG). Gibt None zurück, wenn alles geklappt hat, sonst den Grund.
-    oben = ab welcher Pixelzeile (bei 1080x1920) der 3:4-Ausschnitt fürs Profil-Raster beginnt (Standard 0)."""
+    oben = ab welcher Pixelzeile (bei 1080x1920) der 3:4-Ausschnitt fürs Profil-Raster beginnt (Standard 0).
+    vor_ende = statt sekunde: so viele Sekunden vor dem Videoende (seit 09.11.2026, für Reels ohne Auflösung)."""
     try:
         oben = max(0, min(480, int(oben or 0)))
     except (TypeError, ValueError):
         return f"titelbild_oben '{oben}' ist keine Zahl"
-    try:
-        sekunde = float(sekunde)
-    except (TypeError, ValueError):
-        return f"titelbild_sekunde '{sekunde}' ist keine Zahl"
-    if sekunde < 0:
-        return "titelbild_sekunde darf nicht negativ sein"
+    if vor_ende is not None:
+        try:
+            vor_ende = float(vor_ende)
+        except (TypeError, ValueError):
+            return f"titelbild_vor_ende '{vor_ende}' ist keine Zahl"
+        if vor_ende < 0.1:
+            return "titelbild_vor_ende muss mindestens 0.1 sein"
+        suche, wo = ["-sseof", f"-{vor_ende:.2f}"], f"{vor_ende:g} s vor Ende"
+    else:
+        try:
+            sekunde = float(sekunde)
+        except (TypeError, ValueError):
+            return f"titelbild_sekunde '{sekunde}' ist keine Zahl"
+        if sekunde < 0:
+            return "titelbild_sekunde darf nicht negativ sein"
+        suche, wo = ["-ss", f"{sekunde:.2f}"], f"bei {sekunde:g} s"
     exe = _ffmpeg()
     if not exe:
         return "ffmpeg ist nicht verfügbar"
     roh = Path(str(ziel) + ".roh.png")
-    r = subprocess.run([exe, "-loglevel", "error", "-y", "-ss", f"{sekunde:.2f}", "-i", str(video),
+    r = subprocess.run([exe, "-loglevel", "error", "-y"] + suche + ["-i", str(video),
                         "-frames:v", "1", str(roh)], capture_output=True)
     if r.returncode != 0 or not roh.exists() or roh.stat().st_size == 0:
-        return f"kein Bild bei {sekunde:g} s (Video kürzer?)"
+        return f"kein Bild {wo} (Video kürzer?)"
     from PIL import Image
     with Image.open(roh) as im:
         img = im.convert("RGB")
@@ -733,9 +790,10 @@ def build(item_type, cfg, st, day, test=False, extra=None):
         hole_dateien([video] + ([cover] if cover else []))
         shutil.copy(video, SITE / vname)
         cname, thinweis = None, None
-        if entry.get("titelbild_sekunde") is not None:
+        if entry.get("titelbild_sekunde") is not None or entry.get("titelbild_vor_ende") is not None:
             cname = f"{stamp}_cover.jpg"
-            grund = titelbild_aus_video(SITE / vname, entry["titelbild_sekunde"], SITE / cname)
+            grund = titelbild_aus_video(SITE / vname, entry.get("titelbild_sekunde"), SITE / cname,
+                                        oben=entry.get("titelbild_oben", 0), vor_ende=entry.get("titelbild_vor_ende"))
             if grund:
                 cname = None
                 thinweis = f"Titelbild aus dem Video für {rel(video)} nicht möglich ({grund}). titelbild.png verwendet."
@@ -746,6 +804,8 @@ def build(item_type, cfg, st, day, test=False, extra=None):
         hinweis = " ".join(h for h in (hinweis, thinweis, chinweis) if h) or None
         plan = {"typ": "reel", "art": entry["ordner"], "quelle": rel(video), "video": vname,
                 "cover": cname, "caption": caption}
+        if entry.get("caption_datei"):
+            plan["loesung"] = reihe_loesung(video)
     plan["test"] = test
     plan["extra"] = bool(extra)
     return plan, hinweis
@@ -1078,7 +1138,7 @@ def yt_texte(cfg, entry, video):
     yc = yt_cfg(cfg)
     hinweise = []
     fest = " ".join(_yt_sauber(entry.get("hook")).split())
-    txt, _ = begleittext(video)
+    txt = caption_erste_zeile(cfg, video) if entry.get("caption_datei") else begleittext(video)[0]
     titel = " ".join(_yt_sauber(txt).split()) if txt else fest
     if len(titel) > YT_TITEL_MAX:
         hinweise.append(f"Titel aus der Textdatei ist länger als {YT_TITEL_MAX} Zeichen, fester hook des Typs verwendet.")
@@ -1425,6 +1485,8 @@ def fb_cfg(cfg):
 
 def fb_text(cfg, entry, video):
     """Gibt (text, hinweis) zurück. text ist None, wenn kein Text möglich ist."""
+    if entry.get("caption_datei"):
+        return rr_fb_text(cfg, video)
     hinweise = []
     txt, datei = begleittext(video)
     if datei and not txt:
@@ -1912,9 +1974,10 @@ def titelbild_vorschau(titel):
         quelle = "titelbild.png"
         try:
             grund = "keine titelbild_sekunde"
-            if e.get("titelbild_sekunde") is not None:
+            if e.get("titelbild_sekunde") is not None or e.get("titelbild_vor_ende") is not None:
                 hole_dateien([video])
-                grund = titelbild_aus_video(video, e["titelbild_sekunde"], ziel, oben=e.get("titelbild_oben", 0))
+                grund = titelbild_aus_video(video, e.get("titelbild_sekunde"), ziel, oben=e.get("titelbild_oben", 0),
+                                            vor_ende=e.get("titelbild_vor_ende"))
                 if MEDIA_ROOT != ROOT:
                     video.write_bytes(b"")  # Platz sparen: Video wieder leeren
             if grund:
@@ -1925,7 +1988,8 @@ def titelbild_vorschau(titel):
                 hole_dateien([cover])
                 to_jpeg(cover, ziel, fit_feed=False)
             else:
-                quelle = f"aus Video ({e['titelbild_sekunde']} s)"
+                quelle = (f"aus Video ({e['titelbild_vor_ende']} s vor Ende)" if e.get("titelbild_vor_ende") is not None
+                          else f"aus Video ({e['titelbild_sekunde']} s)")
             with Image.open(ziel) as im:
                 kacheln.append((wann, e["ordner"], quelle, im.convert("RGB").crop((0, 240, 1080, 1680)).resize((270, 360))))
         except Exception as fehler:
@@ -1961,9 +2025,15 @@ def caption_liste(cfg, st):
             txt, _ = begleittext(v)
             yt_titel, yt_beschr, yt_hinweis = _yt_texte_sicher(cfg, e, v)
             fb, fb_hinweis = _fb_text_sicher(cfg, e, v)
-            rows.append([e["ordner"], kurzname(rel(v)), "Textdatei" if txt else "fester Text", cap, hinweis or "",
+            datei_cap = bool(e.get("caption_datei"))
+            try:
+                loesung = reihe_loesung(v) if datei_cap else ""
+            except Exception as fehler:
+                loesung = f"Fehler: {fehler}"
+            rows.append([e["ordner"], kurzname(rel(v)),
+                         "Caption-Datei" if datei_cap else ("Textdatei" if txt else "fester Text"), cap, hinweis or "",
                          yt_titel or "(kein gültiger Titel)", yt_beschr, yt_hinweis or "",
-                         fb or "(kein Text möglich)", fb_hinweis or "", ""])
+                         fb or "(kein Text möglich)", fb_hinweis or "", loesung])
     # Rätsel-Reels ohne Lösung: komplette Caption aus der Caption-Datei, Lösung aus der Übersicht
     for a, vids in raetsel_files(cfg, st).items():
         for v in vids:

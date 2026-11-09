@@ -113,23 +113,25 @@ karussell_rhythmus:
 #  Mehrere Zeilen: nach "facebook_text: |" jede Zeile gleich weit einrücken, Leerzeile = Absatz.
 #  Die Texte sind vorläufig und dürfen jederzeit ersetzt werden (danach Vorschau laufen lassen:
 #  status/captions_reels.csv zeigt in der Spalte Facebook-Text genau, was rausgeht).
+#
+#  caption_datei: true (seit 09.11.2026, Entweder oder + Wissensfragen ohne Auflösung aus dem Reel-Studio):
+#  Caption kommt komplett aus der <Video>_Caption.txt (wie bei den Rätsel-Reels ohne Lösung, nur die
+#  ersten 5 Hashtags), Facebook = gleicher Text ohne "@9xklug_raetsel"-Zeile, YouTube-Titel = erste Zeile
+#  der Caption-Datei, Lösung aus <Video>_Loesung.txt in status/gepostet.csv (Spalte Lösung).
+#  hashtags/aufforderung/facebook_text werden dann nicht gebraucht, hook nur als Ersatz-Titel für YouTube.
+#  Fehlt die Caption-Datei oder ist sie leer: Reel wird übersprungen + Mail.
+#  titelbild_vor_ende = Titelbild so viele Sekunden vor Videoende (statt titelbild_sekunde),
+#  titelbild_oben = Pixelzeile, ab der der 3:4-Ausschnitt fürs Profil-Raster beginnt (Standard 0).
 # ------------------------------------------------------------
 #  Fun Fact läuft seit 31.10.2026 nicht mehr in der Reihe, sondern als fester Termin (seit 08.11.2026 Mo 16:30, siehe extra_termine).
 reel_rhythmus:
   - ordner: Entweder oder
-    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
-    hook: "Zwei Antworten, eine stimmt. Wetten, du tippst falsch?"
-    aufforderung: wissen
-    titelbild_sekunde: 3
-    youtube_text: "Zwei Antworten, eine stimmt. Hast du richtig getippt? Ehrlich in die Kommentare."
-    facebook_text: |
-      Zwei Antworten. Eine ist falsch. Deine hoffentlich nicht. 😏
-
-      Zwei Antworten. Eine ist richtig. Und hinterher ist natürlich immer alles völlig offensichtlich.
-
-      Bei „Entweder oder“ entscheidet sich, ob du wirklich Bescheid weißt, oder nur verdammt überzeugend falsch liegst.
-
-      Na, richtig gelegen oder gnadenlos daneben? 👇
+    # seit 09.11.2026: nur noch Reels ohne Auflösung (Reel-Studio), Texte aus der Caption-Datei
+    caption_datei: true
+    hook: "Zwei Antworten, eine stimmt. Welche ist es?"
+    titelbild_vor_ende: 0.3
+    titelbild_oben: 0
+    youtube_text: "Zwei Antworten, eine stimmt. Welche ist es? Schreib deine Antwort in die Kommentare."
   - ordner: Ausreißer
     hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
     hook: "Eins passt nicht. Findest du es?"
@@ -173,19 +175,12 @@ reel_rhythmus:
 
       Na, richtig erkannt oder auf den Leim gegangen? 👇
   - ordner: Wissensfragen
-    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #unnützeswissen"
+    # seit 09.11.2026: nur noch Reels ohne Auflösung (Reel-Studio), Texte aus der Caption-Datei
+    caption_datei: true
     hook: "Wetten, das weißt du nicht?"
-    aufforderung: wissen
-    titelbild_sekunde: 4
-    youtube_text: "Wetten, das wusstest du nicht? Schreib in die Kommentare, ob du's gewusst hast."
-    facebook_text: |
-      Eine Frage. Eine richtige Antwort. Keine Ausreden. 🧠
-
-      Klingt einfach. Bis man die Antworten sieht und plötzlich alles irgendwie richtig wirkt.
-
-      Bei den Wissensfragen trennt sich echtes Wissen von gutem Raten.
-
-      Na, gewusst oder geraten? 👇
+    titelbild_vor_ende: 0.3
+    titelbild_oben: 65
+    youtube_text: "Wetten, das weißt du nicht? Schreib deine Antwort in die Kommentare."
 
 extra_termine:
   - typ: reel
