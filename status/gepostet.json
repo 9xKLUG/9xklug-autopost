@@ -50,7 +50,8 @@
     "reels/Ohne Lösung/Gedrehte Figur/9x_KLUG_BildReel_Gedrehte_Figur_B1107-1425_01_extrem-schwer_A.mp4",
     "reels/Fun Fact/9x_KLUG_Reel_Die_Firma_begann_1865_als_Holzschliff_Fa.mp4",
     "reels/Ohne Lösung/Minensuche/9x_KLUG_BildReel_Minensuche_B1107-1427_01_sehr-leicht_A.mp4",
-    "reels/Welches Jahr/9x_KLUG_WelchesJahr_1937.mp4"
+    "reels/Welches Jahr/9x_KLUG_WelchesJahr_1937.mp4",
+    "reels/Ohne Lösung/Papierfalten/9x_KLUG_BildReel_Papier_falten_B1107-1407_01_leicht_A.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -102,7 +103,8 @@
     "2026-11-08_21:00_raetsel",
     "2026-11-09_16:30_reel_extra_fun fact",
     "2026-11-09_21:00_raetsel",
-    "2026-11-10_16:30_reel_extra_welches jahr"
+    "2026-11-10_16:30_reel_extra_welches jahr",
+    "2026-11-10_21:00_raetsel"
   ],
   "letzter_reel_typ": "wahr oder falsch",
   "token_erneuert": "2026-11-09",
@@ -466,6 +468,14 @@
       "art": "Welches Jahr",
       "quelle": "reels/Welches Jahr/9x_KLUG_WelchesJahr_1937.mp4",
       "test": false
+    },
+    {
+      "zeit": "2026-11-10T21:21+01:00",
+      "typ": "reel",
+      "art": "Papierfalten",
+      "quelle": "reels/Ohne Lösung/Papierfalten/9x_KLUG_BildReel_Papier_falten_B1107-1407_01_leicht_A.mp4",
+      "test": false,
+      "raetsel": true
     }
   ],
   "fehlversuche": {
@@ -521,6 +531,9 @@
       "status": "aus"
     },
     "reels/Welches Jahr/9x_KLUG_WelchesJahr_1937.mp4": {
+      "status": "aus"
+    },
+    "reels/Ohne Lösung/Papierfalten/9x_KLUG_BildReel_Papier_falten_B1107-1407_01_leicht_A.mp4": {
       "status": "aus"
     }
   },
@@ -579,7 +592,13 @@
       "id": "2024775908187882",
       "link": "https://www.facebook.com/reel/2024775908187882/",
       "zeit": "2026-11-10T16:45+01:00"
+    },
+    "reels/Ohne Lösung/Papierfalten/9x_KLUG_BildReel_Papier_falten_B1107-1407_01_leicht_A.mp4": {
+      "status": "ok",
+      "id": "2184211152449892",
+      "link": "https://www.facebook.com/reel/2184211152449892/",
+      "zeit": "2026-11-10T21:21+01:00"
     }
   },
-  "letzte_raetsel_art": "Minensuche"
+  "letzte_raetsel_art": "Papierfalten"
 }
