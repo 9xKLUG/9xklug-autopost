@@ -19,7 +19,7 @@ aktiv_ab: 2026-10-19
 #   (Instagram, danach Facebook und YouTube, soweit dort aktiv: true).
 #   Gilt auch für die Termine unter extra_termine. Tippfehler = Termin fällt aus + Mail.
 # Zeitplan seit 08.11.2026: zwei Posts pro Tag (16:30 und 21:00), nichts vor 16:30.
-#   16:30: Mo Fun Fact, Di Welches Jahr, Mi Reihe, Do Was verbindet sie, Fr Wer bin ich,
+#   16:30: Mo Fun Fact, Di Welches Jahr, Mi Reihe, Do Schüttelgeschichte (seit 10.11., vorher Was verbindet sie), Fr Wer bin ich,
 #          Sa Karussell (Instagram) + Suchsel (nur Facebook), So Reihe.
 zeitplan:
   - zeit: "16:30"
@@ -236,22 +236,16 @@ extra_termine:
 
       Na, alle drei gefunden oder fehlt noch eins? 👇
   - typ: reel
-    ordner: Was verbindet sie
+    ordner: Schuettelgeschichte
+    # seit 10.11.2026 statt "Was verbindet sie": Schüttelgeschichte aus dem Reel-Studio, ohne Auflösung.
+    # Pro Reel MP4 + _Caption.txt + _Loesung.txt in den Ordner reels/Schuettelgeschichte/ legen.
     tage: [Do]
     zeit: "16:30"
-    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
-    hook: "Was haben sie gemeinsam? Kommst du drauf?"
-    aufforderung: raten
-    titelbild_sekunde: 4
-    youtube_text: "Was haben sie gemeinsam? Bist du vor der Auflösung draufgekommen?"
-    facebook_text: |
-      Drei Dinge. Eine Gemeinsamkeit. Siehst du sie? 🔗
-
-      Auf den ersten Blick haben sie nichts miteinander zu tun. Auf den zweiten auch nicht. Und dann macht's klick.
-
-      Bei „Was verbindet sie?“ gewinnt, wer um die Ecke denkt.
-
-      Na, sofort geschnallt oder hat's ewig gedauert? 👇
+    caption_datei: true
+    hook: "Entwirr die Geschichte. Schaffst du es?"
+    titelbild_vor_ende: 0.3
+    titelbild_oben: 0
+    youtube_text: "Entwirr die Geschichte und schreib sie in die Kommentare."
   - typ: reel
     ordner: Wer bin ich
     tage: [Fr]

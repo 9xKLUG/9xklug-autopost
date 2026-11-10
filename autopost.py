@@ -780,7 +780,11 @@ def build(item_type, cfg, st, day, test=False, extra=None):
         if extra:
             items = reel_files(cfg, st, [extra])[norm(extra["ordner"])]
             entry = extra
-            video, hinweis = (items[0], None) if items else (None, f"Kein Vorrat mehr für '{extra['ordner']}' (zusätzliches Reel fällt aus). Bitte nachlegen.")
+            # seit 10.11.2026: auch Zusatztermine mit caption_datei überspringen Reels ohne gültige Caption-Datei
+            video, uebersprungen = erstes_gueltiges_reel(cfg, extra, items)
+            hinweis = " ".join(uebersprungen) or None
+            if not video:
+                hinweis = " ".join(h for h in (hinweis, f"Kein Vorrat mehr für '{extra['ordner']}' (zusätzliches Reel fällt aus). Bitte nachlegen.") if h)
         else:
             entry, video, hinweis = pick_reel(cfg, st.get("letzter_reel_typ"), reel_files(cfg, st))
         if not video:
@@ -1877,7 +1881,12 @@ def cmd_vorschau(days=14, ausgabe=True):
             if slot["extra"]:
                 e = slot["extra"]
                 items = xpool[id(e)]
-                item = items.pop(0) if items else None
+                if e["typ"] == "reel":
+                    item, _ = erstes_gueltiges_reel(cfg, e, items)
+                    if item:
+                        items.remove(item)
+                else:
+                    item = items.pop(0) if items else None
                 art = e.get("name", e["ordner"]) + (f" (extra, {nur})" if nur else " (extra)")
             elif slot["typ"] == "karussell":
                 e, item, _ = pick_karussell(cfg, last_k, kpool)
