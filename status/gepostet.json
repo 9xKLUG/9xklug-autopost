@@ -52,7 +52,8 @@
     "reels/Ohne Lösung/Minensuche/9x_KLUG_BildReel_Minensuche_B1107-1427_01_sehr-leicht_A.mp4",
     "reels/Welches Jahr/9x_KLUG_WelchesJahr_1937.mp4",
     "reels/Ohne Lösung/Papierfalten/9x_KLUG_BildReel_Papier_falten_B1107-1407_01_leicht_A.mp4",
-    "reels/Wissensfragen/9x_KLUG_Wissensfrage_Warum_haben_Flugzeugfenster_ein_winziges_Loch.mp4"
+    "reels/Wissensfragen/9x_KLUG_Wissensfrage_Warum_haben_Flugzeugfenster_ein_winziges_Loch.mp4",
+    "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_01_leicht_A.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -106,7 +107,8 @@
     "2026-11-09_21:00_raetsel",
     "2026-11-10_16:30_reel_extra_welches jahr",
     "2026-11-10_21:00_raetsel",
-    "2026-11-11_16:30_reel"
+    "2026-11-11_16:30_reel",
+    "2026-11-11_21:00_raetsel"
   ],
   "letzter_reel_typ": "Wissensfragen",
   "token_erneuert": "2026-11-09",
@@ -485,6 +487,14 @@
       "art": "Wissensfragen",
       "quelle": "reels/Wissensfragen/9x_KLUG_Wissensfrage_Warum_haben_Flugzeugfenster_ein_winziges_Loch.mp4",
       "test": false
+    },
+    {
+      "zeit": "2026-11-11T21:13+01:00",
+      "typ": "reel",
+      "art": "Quadrate zählen",
+      "quelle": "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_01_leicht_A.mp4",
+      "test": false,
+      "raetsel": true
     }
   ],
   "fehlversuche": {
@@ -546,6 +556,9 @@
       "status": "aus"
     },
     "reels/Wissensfragen/9x_KLUG_Wissensfrage_Warum_haben_Flugzeugfenster_ein_winziges_Loch.mp4": {
+      "status": "aus"
+    },
+    "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_01_leicht_A.mp4": {
       "status": "aus"
     }
   },
@@ -616,7 +629,13 @@
       "id": "1647791720415581",
       "link": "https://www.facebook.com/reel/1647791720415581/",
       "zeit": "2026-11-11T17:09+01:00"
+    },
+    "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_01_leicht_A.mp4": {
+      "status": "ok",
+      "id": "1127999916823049",
+      "link": "https://www.facebook.com/reel/1127999916823049/",
+      "zeit": "2026-11-11T21:14+01:00"
     }
   },
-  "letzte_raetsel_art": "Papierfalten"
+  "letzte_raetsel_art": "Quadrate zählen"
 }
