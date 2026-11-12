@@ -53,7 +53,8 @@
     "reels/Welches Jahr/9x_KLUG_WelchesJahr_1937.mp4",
     "reels/Ohne Lösung/Papierfalten/9x_KLUG_BildReel_Papier_falten_B1107-1407_01_leicht_A.mp4",
     "reels/Wissensfragen/9x_KLUG_Wissensfrage_Warum_haben_Flugzeugfenster_ein_winziges_Loch.mp4",
-    "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_01_leicht_A.mp4"
+    "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_01_leicht_A.mp4",
+    "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Bankraeuber_stundenlang_hoeflich.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -108,7 +109,8 @@
     "2026-11-10_16:30_reel_extra_welches jahr",
     "2026-11-10_21:00_raetsel",
     "2026-11-11_16:30_reel",
-    "2026-11-11_21:00_raetsel"
+    "2026-11-11_21:00_raetsel",
+    "2026-11-12_16:30_reel_extra_schuettelgeschichte"
   ],
   "letzter_reel_typ": "Wissensfragen",
   "token_erneuert": "2026-11-09",
@@ -495,6 +497,13 @@
       "quelle": "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_01_leicht_A.mp4",
       "test": false,
       "raetsel": true
+    },
+    {
+      "zeit": "2026-11-12T16:54+01:00",
+      "typ": "reel",
+      "art": "Schuettelgeschichte",
+      "quelle": "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Bankraeuber_stundenlang_hoeflich.mp4",
+      "test": false
     }
   ],
   "fehlversuche": {
@@ -559,6 +568,9 @@
       "status": "aus"
     },
     "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_01_leicht_A.mp4": {
+      "status": "aus"
+    },
+    "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Bankraeuber_stundenlang_hoeflich.mp4": {
       "status": "aus"
     }
   },
@@ -635,6 +647,12 @@
       "id": "1127999916823049",
       "link": "https://www.facebook.com/reel/1127999916823049/",
       "zeit": "2026-11-11T21:14+01:00"
+    },
+    "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Bankraeuber_stundenlang_hoeflich.mp4": {
+      "status": "ok",
+      "id": "1448310586712107",
+      "link": "https://www.facebook.com/reel/1448310586712107/",
+      "zeit": "2026-11-12T16:54+01:00"
     }
   },
   "letzte_raetsel_art": "Quadrate zählen"
