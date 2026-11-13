@@ -56,7 +56,8 @@
     "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_01_leicht_A.mp4",
     "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Bankraeuber_stundenlang_hoeflich.mp4",
     "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_01_leicht_A.mp4",
-    "reels/Wer bin ich/9x_KLUG_WerBinIch_Charles_Darwin.mp4"
+    "reels/Wer bin ich/9x_KLUG_WerBinIch_Charles_Darwin.mp4",
+    "reels/Ohne Lösung/Symbolrätsel/9x_KLUG_BildReel_Symbolraetsel_B1107-1349_01_leicht_A.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -114,7 +115,8 @@
     "2026-11-11_21:00_raetsel",
     "2026-11-12_16:30_reel_extra_schuettelgeschichte",
     "2026-11-12_21:00_raetsel",
-    "2026-11-13_16:30_reel_extra_wer bin ich"
+    "2026-11-13_16:30_reel_extra_wer bin ich",
+    "2026-11-13_21:00_raetsel"
   ],
   "letzter_reel_typ": "Wissensfragen",
   "token_erneuert": "2026-11-09",
@@ -523,6 +525,14 @@
       "art": "Wer bin ich",
       "quelle": "reels/Wer bin ich/9x_KLUG_WerBinIch_Charles_Darwin.mp4",
       "test": false
+    },
+    {
+      "zeit": "2026-11-13T21:36+01:00",
+      "typ": "reel",
+      "art": "Symbolrätsel",
+      "quelle": "reels/Ohne Lösung/Symbolrätsel/9x_KLUG_BildReel_Symbolraetsel_B1107-1349_01_leicht_A.mp4",
+      "test": false,
+      "raetsel": true
     }
   ],
   "fehlversuche": {
@@ -596,6 +606,9 @@
       "status": "aus"
     },
     "reels/Wer bin ich/9x_KLUG_WerBinIch_Charles_Darwin.mp4": {
+      "status": "aus"
+    },
+    "reels/Ohne Lösung/Symbolrätsel/9x_KLUG_BildReel_Symbolraetsel_B1107-1349_01_leicht_A.mp4": {
       "status": "aus"
     }
   },
@@ -690,7 +703,13 @@
       "id": "1177103585203553",
       "link": "https://www.facebook.com/reel/1177103585203553/",
       "zeit": "2026-11-13T16:44+01:00"
+    },
+    "reels/Ohne Lösung/Symbolrätsel/9x_KLUG_BildReel_Symbolraetsel_B1107-1349_01_leicht_A.mp4": {
+      "status": "ok",
+      "id": "1177586174931195",
+      "link": "https://www.facebook.com/reel/1177586174931195/",
+      "zeit": "2026-11-13T21:37+01:00"
     }
   },
-  "letzte_raetsel_art": "Streichhölzer"
+  "letzte_raetsel_art": "Symbolrätsel"
 }
