@@ -24,12 +24,21 @@ aktiv_ab: 2026-10-19
 zeitplan:
   - zeit: "16:30"
     typ: reel
-    tage: [Mi, So]
+    tage: [Mi]
+  - zeit: "16:30"
+    typ: reel
+    tage: [So]
+    plattformen: [facebook]
   - zeit: "16:30"
     typ: karussell
     tage: [Sa]
   - zeit: "21:00"
     typ: raetsel
+    tage: [Mo, Di, Mi, Do, Fr, Sa]
+  - zeit: "21:00"
+    typ: raetsel
+    tage: [So]
+    plattformen: [facebook]
 
 # Wird ein Termin verpasst (z. B. Störung bei GitHub), wird höchstens
 # so viele Stunden später noch nachgeholt. Danach fällt er aus.
