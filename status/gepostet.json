@@ -55,7 +55,8 @@
     "reels/Wissensfragen/9x_KLUG_Wissensfrage_Warum_haben_Flugzeugfenster_ein_winziges_Loch.mp4",
     "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_01_leicht_A.mp4",
     "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Bankraeuber_stundenlang_hoeflich.mp4",
-    "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_01_leicht_A.mp4"
+    "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_01_leicht_A.mp4",
+    "reels/Wer bin ich/9x_KLUG_WerBinIch_Charles_Darwin.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -112,7 +113,8 @@
     "2026-11-11_16:30_reel",
     "2026-11-11_21:00_raetsel",
     "2026-11-12_16:30_reel_extra_schuettelgeschichte",
-    "2026-11-12_21:00_raetsel"
+    "2026-11-12_21:00_raetsel",
+    "2026-11-13_16:30_reel_extra_wer bin ich"
   ],
   "letzter_reel_typ": "Wissensfragen",
   "token_erneuert": "2026-11-09",
@@ -514,6 +516,13 @@
       "quelle": "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_01_leicht_A.mp4",
       "test": false,
       "raetsel": true
+    },
+    {
+      "zeit": "2026-11-13T16:43+01:00",
+      "typ": "reel",
+      "art": "Wer bin ich",
+      "quelle": "reels/Wer bin ich/9x_KLUG_WerBinIch_Charles_Darwin.mp4",
+      "test": false
     }
   ],
   "fehlversuche": {
@@ -584,6 +593,9 @@
       "status": "aus"
     },
     "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_01_leicht_A.mp4": {
+      "status": "aus"
+    },
+    "reels/Wer bin ich/9x_KLUG_WerBinIch_Charles_Darwin.mp4": {
       "status": "aus"
     }
   },
@@ -672,6 +684,12 @@
       "id": "2026763248008955",
       "link": "https://www.facebook.com/reel/2026763248008955/",
       "zeit": "2026-11-12T21:45+01:00"
+    },
+    "reels/Wer bin ich/9x_KLUG_WerBinIch_Charles_Darwin.mp4": {
+      "status": "ok",
+      "id": "1177103585203553",
+      "link": "https://www.facebook.com/reel/1177103585203553/",
+      "zeit": "2026-11-13T16:44+01:00"
     }
   },
   "letzte_raetsel_art": "Streichhölzer"
