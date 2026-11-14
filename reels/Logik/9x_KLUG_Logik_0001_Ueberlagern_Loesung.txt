@@ -1,0 +1,2 @@
+LOGIK #1: Antwort D
+Regel: Überlagern. Striche, die in Feld 1 und Feld 2 vorkommen, fallen weg. Der Rest bleibt.

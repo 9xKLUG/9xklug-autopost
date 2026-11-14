@@ -1,0 +1,2 @@
+LOGIK #6: Antwort D
+Regel: Zusammenlegen. Alle Striche aus Feld 1 und Feld 2 zusammen.

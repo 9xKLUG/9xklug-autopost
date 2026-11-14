@@ -255,23 +255,17 @@ extra_termine:
     titelbild_vor_ende: 0.3
     titelbild_oben: 0
     youtube_text: "Entwirr die Geschichte und schreib sie in die Kommentare."
-  - typ: reel
-    ordner: Wer bin ich
+    - typ: reel
+    ordner: Logik
+    # seit 14.11.2026 statt "Wer bin ich": Logik-Rätsel aus dem Reel-Studio, ohne Auflösung.
+    # Pro Reel MP4 + _Caption.txt + _Loesung.txt in den Ordner reels/Logik/ legen (Namen nicht ändern).
     tage: [Fr]
     zeit: "16:30"
-    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #werbinich"
-    hook: "Drei Hinweise, eine Person aus der Geschichte. Wer bin ich?"
-    aufforderung: raten
-    titelbild_sekunde: 6
-    youtube_text: "Drei Hinweise, eine Person aus der Geschichte. Nach welchem Hinweis wusstest du es?"
-    facebook_text: |
-      Wer bin ich? Die Hinweise verraten es. Nach und nach. 🕵️
-
-      Erst passt alles auf jeden. Dann wird's enger. Und irgendwann fragst du dich, warum du nicht gleich drauf gekommen bist.
-
-      Bei „Wer bin ich?“ zählt, wie wenige Hinweise du brauchst.
-
-      Na, beim ersten Hinweis oder erst ganz am Ende? 👇
+    caption_datei: true
+    hook: "Nur wenige lösen das. Findest du die Regel?"
+    titelbild_vor_ende: 0.3
+    titelbild_oben: 70
+    youtube_text: "Finde die Regel und schreib deine Lösung (A, B, C oder D) in die Kommentare."
 
 # ------------------------------------------------------------
 #  RÄTSEL-REELS OHNE LÖSUNG (seit 07.11.2026)

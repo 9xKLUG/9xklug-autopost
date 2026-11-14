@@ -1,0 +1,2 @@
+LOGIK #9: Antwort A
+Regel: Abziehen. Feld 1 ohne die Striche aus Feld 2.

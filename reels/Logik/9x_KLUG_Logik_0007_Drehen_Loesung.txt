@@ -1,0 +1,2 @@
+LOGIK #7: Antwort D
+Regel: Drehen. Die ganze Figur dreht sich von Feld zu Feld eine Vierteldrehung im Uhrzeigersinn weiter.

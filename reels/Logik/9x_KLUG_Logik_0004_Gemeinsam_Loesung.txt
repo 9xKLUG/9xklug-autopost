@@ -1,0 +1,2 @@
+LOGIK #4: Antwort D
+Regel: Nur Gemeinsames. Nur die Striche, die in Feld 1 und Feld 2 vorkommen, bleiben.

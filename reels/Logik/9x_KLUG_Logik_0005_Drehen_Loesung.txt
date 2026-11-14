@@ -1,0 +1,2 @@
+LOGIK #5: Antwort A
+Regel: Drehen. Die ganze Figur dreht sich von Feld zu Feld eine Vierteldrehung im Uhrzeigersinn weiter.
