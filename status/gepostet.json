@@ -57,7 +57,8 @@
     "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Bankraeuber_stundenlang_hoeflich.mp4",
     "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_01_leicht_A.mp4",
     "reels/Wer bin ich/9x_KLUG_WerBinIch_Charles_Darwin.mp4",
-    "reels/Ohne Lösung/Symbolrätsel/9x_KLUG_BildReel_Symbolraetsel_B1107-1349_01_leicht_A.mp4"
+    "reels/Ohne Lösung/Symbolrätsel/9x_KLUG_BildReel_Symbolraetsel_B1107-1349_01_leicht_A.mp4",
+    "karussells/9x_KLUG_Zahlenschloss_2026-10-15/Post_01_Zahlenschloss"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -116,7 +117,8 @@
     "2026-11-12_16:30_reel_extra_schuettelgeschichte",
     "2026-11-12_21:00_raetsel",
     "2026-11-13_16:30_reel_extra_wer bin ich",
-    "2026-11-13_21:00_raetsel"
+    "2026-11-13_21:00_raetsel",
+    "2026-11-14_16:30_karussell"
   ],
   "letzter_reel_typ": "Wissensfragen",
   "token_erneuert": "2026-11-09",
@@ -533,13 +535,20 @@
       "quelle": "reels/Ohne Lösung/Symbolrätsel/9x_KLUG_BildReel_Symbolraetsel_B1107-1349_01_leicht_A.mp4",
       "test": false,
       "raetsel": true
+    },
+    {
+      "zeit": "2026-11-14T16:55+01:00",
+      "typ": "karussell",
+      "art": "Zahlenschloss",
+      "quelle": "karussells/9x_KLUG_Zahlenschloss_2026-10-15/Post_01_Zahlenschloss",
+      "test": false
     }
   ],
   "fehlversuche": {
     "2026-10-20_07:45_reel": 3,
     "2026-10-31_14:30_karussell": 3
   },
-  "letzte_karussell_art": "Gedrehte Figur",
+  "letzte_karussell_art": "Zahlenschloss",
   "youtube_tests": [
     {
       "zeit": "2026-11-03T19:08+01:00",
