@@ -59,7 +59,8 @@
     "reels/Wer bin ich/9x_KLUG_WerBinIch_Charles_Darwin.mp4",
     "reels/Ohne Lösung/Symbolrätsel/9x_KLUG_BildReel_Symbolraetsel_B1107-1349_01_leicht_A.mp4",
     "karussells/9x_KLUG_Zahlenschloss_2026-10-15/Post_01_Zahlenschloss",
-    "reels/Suchsel/9x_KLUG_Suchsel_Baeume_LINDE_EICHE_KIEFER.mp4"
+    "reels/Suchsel/9x_KLUG_Suchsel_Baeume_LINDE_EICHE_KIEFER.mp4",
+    "reels/Ohne Lösung/Würfelnetz/9x_KLUG_BildReel_Wuerfelnetz_B1107-1403_01_leicht_A.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -120,7 +121,8 @@
     "2026-11-13_16:30_reel_extra_wer bin ich",
     "2026-11-13_21:00_raetsel",
     "2026-11-14_16:30_karussell",
-    "2026-11-14_16:30_reel_extra_suchsel"
+    "2026-11-14_16:30_reel_extra_suchsel",
+    "2026-11-14_21:00_raetsel"
   ],
   "letzter_reel_typ": "Wissensfragen",
   "token_erneuert": "2026-11-09",
@@ -551,6 +553,14 @@
       "art": "Suchsel",
       "quelle": "reels/Suchsel/9x_KLUG_Suchsel_Baeume_LINDE_EICHE_KIEFER.mp4",
       "test": false
+    },
+    {
+      "zeit": "2026-11-14T21:18+01:00",
+      "typ": "reel",
+      "art": "Würfelnetz",
+      "quelle": "reels/Ohne Lösung/Würfelnetz/9x_KLUG_BildReel_Wuerfelnetz_B1107-1403_01_leicht_A.mp4",
+      "test": false,
+      "raetsel": true
     }
   ],
   "fehlversuche": {
@@ -630,6 +640,9 @@
       "status": "aus"
     },
     "reels/Suchsel/9x_KLUG_Suchsel_Baeume_LINDE_EICHE_KIEFER.mp4": {
+      "status": "aus"
+    },
+    "reels/Ohne Lösung/Würfelnetz/9x_KLUG_BildReel_Wuerfelnetz_B1107-1403_01_leicht_A.mp4": {
       "status": "aus"
     }
   },
@@ -736,7 +749,13 @@
       "id": "1157081200208466",
       "link": "https://www.facebook.com/reel/1157081200208466/",
       "zeit": "2026-11-14T17:33+01:00"
+    },
+    "reels/Ohne Lösung/Würfelnetz/9x_KLUG_BildReel_Wuerfelnetz_B1107-1403_01_leicht_A.mp4": {
+      "status": "ok",
+      "id": "4570954259871046",
+      "link": "https://www.facebook.com/reel/4570954259871046/",
+      "zeit": "2026-11-14T21:19+01:00"
     }
   },
-  "letzte_raetsel_art": "Symbolrätsel"
+  "letzte_raetsel_art": "Würfelnetz"
 }
