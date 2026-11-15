@@ -1137,12 +1137,22 @@ def _yt_sauber(text):
     return str(text or "").replace("<", "").replace(">", "").strip()
 
 
+def titel_datei(video):
+    """Erste Zeile der <Video>_Titel.txt aus dem Reel-Studio (YouTube-Titel, seit 15.11.2026: Waage), sonst None."""
+    for p in video.parent.iterdir():
+        if p.suffix.lower() == ".txt" and norm(p.stem) == norm(video.stem + "_Titel"):
+            for l in lies_text(p).splitlines():
+                if l.strip():
+                    return l.strip()
+    return None
+
+
 def yt_texte(cfg, entry, video):
     """Gibt (titel, beschreibung, hinweis) zurück. titel ist None, wenn kein gültiger Titel möglich ist."""
     yc = yt_cfg(cfg)
     hinweise = []
     fest = " ".join(_yt_sauber(entry.get("hook")).split())
-    txt = caption_erste_zeile(cfg, video) if entry.get("caption_datei") else begleittext(video)[0]
+    txt = titel_datei(video) or (caption_erste_zeile(cfg, video) if entry.get("caption_datei") else begleittext(video)[0])
     titel = " ".join(_yt_sauber(txt).split()) if txt else fest
     if len(titel) > YT_TITEL_MAX:
         hinweise.append(f"Titel aus der Textdatei ist länger als {YT_TITEL_MAX} Zeichen, fester hook des Typs verwendet.")

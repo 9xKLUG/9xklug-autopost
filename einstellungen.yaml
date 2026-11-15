@@ -19,7 +19,7 @@ aktiv_ab: 2026-10-19
 #   (Instagram, danach Facebook und YouTube, soweit dort aktiv: true).
 #   Gilt auch für die Termine unter extra_termine. Tippfehler = Termin fällt aus + Mail.
 # Zeitplan seit 08.11.2026: zwei Posts pro Tag (16:30 und 21:00), nichts vor 16:30.
-#   16:30: Mo Fun Fact, Di Welches Jahr, Mi Reihe, Do Schüttelgeschichte (seit 10.11., vorher Was verbindet sie), Fr Wer bin ich,
+#   16:30: Mo Fun Fact, Di Waage (seit 17.11., vorher Welches Jahr), Mi Reihe, Do Schüttelgeschichte (seit 10.11., vorher Was verbindet sie), Fr Logik (seit 14.11., vorher Wer bin ich),
 #          Sa Karussell (Instagram) + Suchsel (nur Facebook), So Reihe.
 zeitplan:
   - zeit: "16:30"
@@ -210,22 +210,17 @@ extra_termine:
 
       Na, wusstest du's schon oder hast du gerade was gelernt? 👇
   - typ: reel
-    ordner: Welches Jahr
+    ordner: Waage
+    # seit 17.11.2026 statt "Welches Jahr": Waagen-Rätsel aus dem Reel-Studio, ohne Auflösung.
+    # Pro Reel MP4 + _Caption.txt + _Loesung.txt + _Titel.txt in den Ordner reels/Waage/ legen (Namen nicht ändern).
+    # YouTube-Titel kommt aus der _Titel.txt (fehlt sie: erste Zeile der Caption).
     tage: [Di]
     zeit: "16:30"
-    hashtags: "#rätsel #Denksport #knobeln #gehirnjogging #rätselspaß"
-    hook: "Das alles ist in einem einzigen Jahr passiert. Welches Jahr ist es?"
-    aufforderung: raten
-    titelbild_sekunde: 5.9
-    youtube_text: "Das alles ist in einem einzigen Jahr passiert. Wie nah warst du dran?"
-    facebook_text: |
-      Ein gesuchtes Jahr. Keine Ahnung? Oder doch? 📅
-
-      Ein paar Hinweise, ein Jahr. Grob schätzen kann jeder. Aufs Jahr genau wird's eng.
-
-      Bei „Welches Jahr?“ zeigt sich, wie gut dein Geschichtsgefühl wirklich ist.
-
-      Na, Volltreffer oder Jahrzehnte daneben? 👇
+    caption_datei: true
+    hook: "Wie viele gleichen die letzte Waage aus?"
+    titelbild_vor_ende: 0.3
+    titelbild_oben: 120
+    youtube_text: "Rechne die Waagen durch und schreib deine Zahl in die Kommentare."
   - typ: reel
     ordner: Suchsel
     tage: [Sa]
