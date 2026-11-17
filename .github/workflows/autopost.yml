@@ -11,6 +11,7 @@ on:
         default: vorschau
         options:
           - vorschau
+          - jetzt-posten
           - test-reel
           - test-karussell
           - test-youtube
@@ -66,7 +67,7 @@ jobs:
 
       - name: Fälligen Post vorbereiten
         id: prep
-        if: github.event_name == 'schedule' || inputs.aktion == 'test-reel' || inputs.aktion == 'test-karussell'
+        if: github.event_name == 'schedule' || inputs.aktion == 'jetzt-posten' || inputs.aktion == 'test-reel' || inputs.aktion == 'test-karussell'
         run: |
           case "${{ inputs.aktion }}" in
             test-reel) python autopost.py prepare --test reel ;;
