@@ -64,7 +64,8 @@
     "reels/Entweder oder/9x_KLUG_EntwederOder_Aegypten_oder_Sudan.mp4",
     "reels/Ohne Lösung/Würfeltürme/9x_KLUG_BildReel_Wuerfeltuerme_B1107-1400_01_leicht_A.mp4",
     "reels/Fun Fact/9x_KLUG_Reel_Die_Milchstrasse_hat_bis_zu_400_Milliard.mp4",
-    "reels/Ohne Lösung/Zahlenmauer/9x_KLUG_BildReel_Zahlenmauer_B1107-1359_01_leicht_A.mp4"
+    "reels/Ohne Lösung/Zahlenmauer/9x_KLUG_BildReel_Zahlenmauer_B1107-1359_01_leicht_A.mp4",
+    "reels/Waage/9x_KLUG_Waage_0001.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -131,7 +132,8 @@
     "2026-11-15_21:00_raetsel",
     "2026-11-16_16:30_reel_extra_fun fact",
     "2026-11-16_21:00_raetsel",
-    "2026-11-17_21:00_raetsel"
+    "2026-11-17_21:00_raetsel",
+    "2026-11-17_16:30_reel_extra_waage"
   ],
   "letzter_reel_typ": "Entweder oder",
   "token_erneuert": "2026-11-16",
@@ -600,6 +602,13 @@
       "quelle": "reels/Ohne Lösung/Zahlenmauer/9x_KLUG_BildReel_Zahlenmauer_B1107-1359_01_leicht_A.mp4",
       "test": false,
       "raetsel": true
+    },
+    {
+      "zeit": "2026-11-17T19:00+01:00",
+      "typ": "reel",
+      "art": "Waage",
+      "quelle": "reels/Waage/9x_KLUG_Waage_0001.mp4",
+      "test": false
     }
   ],
   "fehlversuche": {
@@ -694,6 +703,9 @@
       "status": "aus"
     },
     "reels/Ohne Lösung/Zahlenmauer/9x_KLUG_BildReel_Zahlenmauer_B1107-1359_01_leicht_A.mp4": {
+      "status": "aus"
+    },
+    "reels/Waage/9x_KLUG_Waage_0001.mp4": {
       "status": "aus"
     }
   },
@@ -830,6 +842,12 @@
       "id": "2019183509486690",
       "link": "https://www.facebook.com/reel/2019183509486690/",
       "zeit": "2026-11-16T21:26+01:00"
+    },
+    "reels/Waage/9x_KLUG_Waage_0001.mp4": {
+      "status": "ok",
+      "id": "1195201986510921",
+      "link": "https://www.facebook.com/reel/1195201986510921/",
+      "zeit": "2026-11-17T19:01+01:00"
     }
   },
   "letzte_raetsel_art": "Zahlenmauer"
