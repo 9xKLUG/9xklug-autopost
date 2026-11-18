@@ -65,7 +65,8 @@
     "reels/Ohne Lösung/Würfeltürme/9x_KLUG_BildReel_Wuerfeltuerme_B1107-1400_01_leicht_A.mp4",
     "reels/Fun Fact/9x_KLUG_Reel_Die_Milchstrasse_hat_bis_zu_400_Milliard.mp4",
     "reels/Ohne Lösung/Zahlenmauer/9x_KLUG_BildReel_Zahlenmauer_B1107-1359_01_leicht_A.mp4",
-    "reels/Waage/9x_KLUG_Waage_0001.mp4"
+    "reels/Waage/9x_KLUG_Waage_0001.mp4",
+    "reels/Ausreißer/9x_KLUG_Reel_Ausreisser_1896_1869_char.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -133,9 +134,10 @@
     "2026-11-16_16:30_reel_extra_fun fact",
     "2026-11-16_21:00_raetsel",
     "2026-11-17_21:00_raetsel",
-    "2026-11-17_16:30_reel_extra_waage"
+    "2026-11-17_16:30_reel_extra_waage",
+    "2026-11-18_16:30_reel"
   ],
-  "letzter_reel_typ": "Entweder oder",
+  "letzter_reel_typ": "Ausreißer",
   "token_erneuert": "2026-11-16",
   "verlauf": [
     {
@@ -609,6 +611,13 @@
       "art": "Waage",
       "quelle": "reels/Waage/9x_KLUG_Waage_0001.mp4",
       "test": false
+    },
+    {
+      "zeit": "2026-11-18T17:48+01:00",
+      "typ": "reel",
+      "art": "Ausreißer",
+      "quelle": "reels/Ausreißer/9x_KLUG_Reel_Ausreisser_1896_1869_char.mp4",
+      "test": false
     }
   ],
   "fehlversuche": {
@@ -706,6 +715,9 @@
       "status": "aus"
     },
     "reels/Waage/9x_KLUG_Waage_0001.mp4": {
+      "status": "aus"
+    },
+    "reels/Ausreißer/9x_KLUG_Reel_Ausreisser_1896_1869_char.mp4": {
       "status": "aus"
     }
   },
@@ -848,6 +860,12 @@
       "id": "1195201986510921",
       "link": "https://www.facebook.com/reel/1195201986510921/",
       "zeit": "2026-11-17T19:01+01:00"
+    },
+    "reels/Ausreißer/9x_KLUG_Reel_Ausreisser_1896_1869_char.mp4": {
+      "status": "ok",
+      "id": "1892638421905277",
+      "link": "https://www.facebook.com/reel/1892638421905277/",
+      "zeit": "2026-11-18T17:49+01:00"
     }
   },
   "letzte_raetsel_art": "Zahlenmauer"
