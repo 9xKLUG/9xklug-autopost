@@ -33,7 +33,7 @@ zeitplan:
 
 # Wird ein Termin verpasst (z. B. Störung bei GitHub), wird höchstens
 # so viele Stunden später noch nachgeholt. Danach fällt er aus.
-max_verspaetung_stunden: 6
+max_verspaetung_stunden: 2
 
 # ------------------------------------------------------------
 #  KARUSSELLS
