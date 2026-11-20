@@ -70,7 +70,8 @@
     "reels/Ohne Lösung/Zahlenreihe/9x_KLUG_BildReel_Zahlenreihe_B1107-1347_01_leicht_A.mp4",
     "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Dieb_Polizei_Fluchtauto_gestohlen.mp4",
     "reels/Ohne Lösung/Zahlenschloss/9x_KLUG_BildReel_Zahlenschloss_B1107-1424_01_sehr-leicht_A.mp4",
-    "reels/Logik/9x_KLUG_Logik_0001_Ueberlagern.mp4"
+    "reels/Logik/9x_KLUG_Logik_0001_Ueberlagern.mp4",
+    "reels/Ohne Lösung/Zahnräder/9x_KLUG_BildReel_Zahnraeder_B1107-1404_01_schwer_A.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -143,7 +144,8 @@
     "2026-11-18_21:00_raetsel",
     "2026-11-19_16:30_reel_extra_schuettelgeschichte",
     "2026-11-19_21:00_raetsel",
-    "2026-11-20_16:30_reel_extra_logik"
+    "2026-11-20_16:30_reel_extra_logik",
+    "2026-11-20_21:00_raetsel"
   ],
   "letzter_reel_typ": "Ausreißer",
   "token_erneuert": "2026-11-16",
@@ -656,6 +658,14 @@
       "art": "Logik",
       "quelle": "reels/Logik/9x_KLUG_Logik_0001_Ueberlagern.mp4",
       "test": false
+    },
+    {
+      "zeit": "2026-11-20T21:15+01:00",
+      "typ": "reel",
+      "art": "Zahnräder",
+      "quelle": "reels/Ohne Lösung/Zahnräder/9x_KLUG_BildReel_Zahnraeder_B1107-1404_01_schwer_A.mp4",
+      "test": false,
+      "raetsel": true
     }
   ],
   "fehlversuche": {
@@ -768,6 +778,9 @@
       "status": "aus"
     },
     "reels/Logik/9x_KLUG_Logik_0001_Ueberlagern.mp4": {
+      "status": "aus"
+    },
+    "reels/Ohne Lösung/Zahnräder/9x_KLUG_BildReel_Zahnraeder_B1107-1404_01_schwer_A.mp4": {
       "status": "aus"
     }
   },
@@ -940,7 +953,13 @@
       "id": "1632294834723370",
       "link": "https://www.facebook.com/reel/1632294834723370/",
       "zeit": "2026-11-20T16:47+01:00"
+    },
+    "reels/Ohne Lösung/Zahnräder/9x_KLUG_BildReel_Zahnraeder_B1107-1404_01_schwer_A.mp4": {
+      "status": "ok",
+      "id": "1822653292375100",
+      "link": "https://www.facebook.com/reel/1822653292375100/",
+      "zeit": "2026-11-20T21:16+01:00"
     }
   },
-  "letzte_raetsel_art": "Zahlenschloss"
+  "letzte_raetsel_art": "Zahnräder"
 }
