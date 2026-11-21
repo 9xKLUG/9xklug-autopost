@@ -71,7 +71,8 @@
     "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Dieb_Polizei_Fluchtauto_gestohlen.mp4",
     "reels/Ohne Lösung/Zahlenschloss/9x_KLUG_BildReel_Zahlenschloss_B1107-1424_01_sehr-leicht_A.mp4",
     "reels/Logik/9x_KLUG_Logik_0001_Ueberlagern.mp4",
-    "reels/Ohne Lösung/Zahnräder/9x_KLUG_BildReel_Zahnraeder_B1107-1404_01_schwer_A.mp4"
+    "reels/Ohne Lösung/Zahnräder/9x_KLUG_BildReel_Zahnraeder_B1107-1404_01_schwer_A.mp4",
+    "karussells/9x_KLUG_Quadrate_zaehlen_2026-10-17(1)/Post_01_Quadrate_zaehlen"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -145,7 +146,8 @@
     "2026-11-19_16:30_reel_extra_schuettelgeschichte",
     "2026-11-19_21:00_raetsel",
     "2026-11-20_16:30_reel_extra_logik",
-    "2026-11-20_21:00_raetsel"
+    "2026-11-20_21:00_raetsel",
+    "2026-11-21_16:30_karussell"
   ],
   "letzter_reel_typ": "Ausreißer",
   "token_erneuert": "2026-11-16",
@@ -666,6 +668,13 @@
       "quelle": "reels/Ohne Lösung/Zahnräder/9x_KLUG_BildReel_Zahnraeder_B1107-1404_01_schwer_A.mp4",
       "test": false,
       "raetsel": true
+    },
+    {
+      "zeit": "2026-11-21T17:00+01:00",
+      "typ": "karussell",
+      "art": "Quadrate zählen",
+      "quelle": "karussells/9x_KLUG_Quadrate_zaehlen_2026-10-17(1)/Post_01_Quadrate_zaehlen",
+      "test": false
     }
   ],
   "fehlversuche": {
@@ -673,7 +682,7 @@
     "2026-10-31_14:30_karussell": 3,
     "2026-11-21_16:30_karussell": 1
   },
-  "letzte_karussell_art": "Zahlenschloss",
+  "letzte_karussell_art": "Quadrate zählen",
   "youtube_tests": [
     {
       "zeit": "2026-11-03T19:08+01:00",
