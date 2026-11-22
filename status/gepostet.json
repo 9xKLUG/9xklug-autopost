@@ -74,7 +74,8 @@
     "reels/Ohne Lösung/Zahnräder/9x_KLUG_BildReel_Zahnraeder_B1107-1404_01_schwer_A.mp4",
     "karussells/9x_KLUG_Quadrate_zaehlen_2026-10-17(1)/Post_01_Quadrate_zaehlen",
     "reels/Suchsel/9x_KLUG_Suchsel_Baeume_WEIDE_PALME_FICHTE.mp4",
-    "reels/Ohne Lösung/Buchstabenreihe/9x_KLUG_BildReel_Buchstabenreihe_B1107-1423_02_sehr-leicht_A.mp4"
+    "reels/Ohne Lösung/Buchstabenreihe/9x_KLUG_BildReel_Buchstabenreihe_B1107-1423_02_sehr-leicht_A.mp4",
+    "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_waagerechten_Fugen_zwische.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -151,9 +152,10 @@
     "2026-11-20_21:00_raetsel",
     "2026-11-21_16:30_karussell",
     "2026-11-21_16:30_reel_extra_suchsel",
-    "2026-11-21_21:00_raetsel"
+    "2026-11-21_21:00_raetsel",
+    "2026-11-22_16:30_reel"
   ],
-  "letzter_reel_typ": "Ausreißer",
+  "letzter_reel_typ": "optische täuschung",
   "token_erneuert": "2026-11-16",
   "verlauf": [
     {
@@ -694,6 +696,13 @@
       "quelle": "reels/Ohne Lösung/Buchstabenreihe/9x_KLUG_BildReel_Buchstabenreihe_B1107-1423_02_sehr-leicht_A.mp4",
       "test": false,
       "raetsel": true
+    },
+    {
+      "zeit": "2026-11-22T16:46+01:00",
+      "typ": "reel",
+      "art": "optische täuschung",
+      "quelle": "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_waagerechten_Fugen_zwische.mp4",
+      "test": false
     }
   ],
   "fehlversuche": {
@@ -817,6 +826,9 @@
       "status": "aus"
     },
     "reels/Ohne Lösung/Buchstabenreihe/9x_KLUG_BildReel_Buchstabenreihe_B1107-1423_02_sehr-leicht_A.mp4": {
+      "status": "aus"
+    },
+    "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_waagerechten_Fugen_zwische.mp4": {
       "status": "aus"
     }
   },
@@ -1007,6 +1019,12 @@
       "id": "2210032556613480",
       "link": "https://www.facebook.com/reel/2210032556613480/",
       "zeit": "2026-11-21T21:31+01:00"
+    },
+    "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_waagerechten_Fugen_zwische.mp4": {
+      "status": "ok",
+      "id": "1142387518651422",
+      "link": "https://www.facebook.com/reel/1142387518651422/",
+      "zeit": "2026-11-22T16:47+01:00"
     }
   },
   "letzte_raetsel_art": "Buchstabenreihe"
