@@ -75,7 +75,8 @@
     "karussells/9x_KLUG_Quadrate_zaehlen_2026-10-17(1)/Post_01_Quadrate_zaehlen",
     "reels/Suchsel/9x_KLUG_Suchsel_Baeume_WEIDE_PALME_FICHTE.mp4",
     "reels/Ohne Lösung/Buchstabenreihe/9x_KLUG_BildReel_Buchstabenreihe_B1107-1423_02_sehr-leicht_A.mp4",
-    "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_waagerechten_Fugen_zwische.mp4"
+    "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_waagerechten_Fugen_zwische.mp4",
+    "reels/Ohne Lösung/Gedrehte Figur/9x_KLUG_BildReel_Gedrehte_Figur_B1107-1425_02_extrem-schwer_A.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -153,7 +154,8 @@
     "2026-11-21_16:30_karussell",
     "2026-11-21_16:30_reel_extra_suchsel",
     "2026-11-21_21:00_raetsel",
-    "2026-11-22_16:30_reel"
+    "2026-11-22_16:30_reel",
+    "2026-11-22_21:00_raetsel"
   ],
   "letzter_reel_typ": "optische täuschung",
   "token_erneuert": "2026-11-16",
@@ -703,6 +705,14 @@
       "art": "optische täuschung",
       "quelle": "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_waagerechten_Fugen_zwische.mp4",
       "test": false
+    },
+    {
+      "zeit": "2026-11-22T21:15+01:00",
+      "typ": "reel",
+      "art": "Gedrehte Figur",
+      "quelle": "reels/Ohne Lösung/Gedrehte Figur/9x_KLUG_BildReel_Gedrehte_Figur_B1107-1425_02_extrem-schwer_A.mp4",
+      "test": false,
+      "raetsel": true
     }
   ],
   "fehlversuche": {
@@ -829,6 +839,9 @@
       "status": "aus"
     },
     "reels/optische täuschung/9x_KLUG_Reel_Schau_dir_die_waagerechten_Fugen_zwische.mp4": {
+      "status": "aus"
+    },
+    "reels/Ohne Lösung/Gedrehte Figur/9x_KLUG_BildReel_Gedrehte_Figur_B1107-1425_02_extrem-schwer_A.mp4": {
       "status": "aus"
     }
   },
@@ -1025,7 +1038,13 @@
       "id": "1142387518651422",
       "link": "https://www.facebook.com/reel/1142387518651422/",
       "zeit": "2026-11-22T16:47+01:00"
+    },
+    "reels/Ohne Lösung/Gedrehte Figur/9x_KLUG_BildReel_Gedrehte_Figur_B1107-1425_02_extrem-schwer_A.mp4": {
+      "status": "ok",
+      "id": "2197945781077606",
+      "link": "https://www.facebook.com/reel/2197945781077606/",
+      "zeit": "2026-11-22T21:16+01:00"
     }
   },
-  "letzte_raetsel_art": "Buchstabenreihe"
+  "letzte_raetsel_art": "Gedrehte Figur"
 }
