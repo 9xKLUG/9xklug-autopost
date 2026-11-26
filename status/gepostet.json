@@ -83,7 +83,8 @@
     "reels/Ohne Lösung/Papierfalten/9x_KLUG_BildReel_Papier_falten_B1107-1407_02_leicht_A.mp4",
     "reels/wahr oder falsch/9x_KLUG_Reel_WAHR_ODER_FALSCH_schildkröte.mp4",
     "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_02_leicht_A.mp4",
-    "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Erfinder_Zeitmaschine_gestern_puenktlich.mp4"
+    "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Erfinder_Zeitmaschine_gestern_puenktlich.mp4",
+    "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_02_leicht_A.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -169,7 +170,8 @@
     "2026-11-24_21:00_raetsel",
     "2026-11-25_16:30_reel",
     "2026-11-25_21:00_raetsel",
-    "2026-11-26_16:30_reel_extra_schuettelgeschichte"
+    "2026-11-26_16:30_reel_extra_schuettelgeschichte",
+    "2026-11-26_21:00_raetsel"
   ],
   "letzter_reel_typ": "wahr oder falsch",
   "token_erneuert": "2026-11-23",
@@ -779,6 +781,14 @@
       "art": "Schuettelgeschichte",
       "quelle": "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Erfinder_Zeitmaschine_gestern_puenktlich.mp4",
       "test": false
+    },
+    {
+      "zeit": "2026-11-26T21:05+01:00",
+      "typ": "reel",
+      "art": "Streichhölzer",
+      "quelle": "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_02_leicht_A.mp4",
+      "test": false,
+      "raetsel": true
     }
   ],
   "fehlversuche": {
@@ -929,6 +939,9 @@
       "status": "aus"
     },
     "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Erfinder_Zeitmaschine_gestern_puenktlich.mp4": {
+      "status": "aus"
+    },
+    "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_02_leicht_A.mp4": {
       "status": "aus"
     }
   },
@@ -1173,7 +1186,13 @@
       "id": "973197968919046",
       "link": "https://www.facebook.com/reel/973197968919046/",
       "zeit": "2026-11-26T16:47+01:00"
+    },
+    "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_02_leicht_A.mp4": {
+      "status": "ok",
+      "id": "1527267299371976",
+      "link": "https://www.facebook.com/reel/1527267299371976/",
+      "zeit": "2026-11-26T21:06+01:00"
     }
   },
-  "letzte_raetsel_art": "Quadrate zählen"
+  "letzte_raetsel_art": "Streichhölzer"
 }
