@@ -46,6 +46,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           filter: blob:none        # Videos/Bilder nicht vorab laden
+          ref: main                # immer den neuesten Stand (sonst Stand vom Anstoßen, Doppelpost 27.11.2026)
           sparse-checkout: status  # nur Programm, Einstellungen und Status
       - uses: actions/setup-python@v5
         with:
@@ -123,6 +124,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           filter: blob:none        # Videos/Bilder nicht vorab laden
+          ref: main                # immer den neuesten Stand (sonst Stand vom Anstoßen, Doppelpost 27.11.2026)
           sparse-checkout: status  # nur Programm, Einstellungen und Status
       - uses: actions/setup-python@v5
         with:
@@ -159,6 +161,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           filter: blob:none        # Videos/Bilder nicht vorab laden
+          ref: main                # immer den neuesten Stand (sonst Stand vom Anstoßen, Doppelpost 27.11.2026)
           sparse-checkout: status  # nur Programm, Einstellungen und Status
       - uses: actions/setup-python@v5
         with:
@@ -189,6 +192,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           filter: blob:none        # Videos/Bilder nicht vorab laden
+          ref: main                # immer den neuesten Stand (sonst Stand vom Anstoßen, Doppelpost 27.11.2026)
           sparse-checkout: status  # nur Programm, Einstellungen und Status
       - uses: actions/setup-python@v5
         with:

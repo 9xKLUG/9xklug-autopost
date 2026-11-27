@@ -988,8 +988,37 @@ def schon_online(uid, plan, st, minuten=None):
     return None
 
 
+def schon_erledigt_auf_github(plan):
+    """Letzte Kontrolle direkt vor dem Posten (seit 27.11.2026, Anlass: Doppelpost 21:00).
+    Ein Lauf, der während eines anderen Laufs angestoßen wurde, kann mit einem veralteten Stand starten.
+    Deshalb hier den Stand von GitHub (main) frisch holen und prüfen, ob der Termin oder das Reel/Karussell
+    dort schon als gepostet eingetragen ist. Gibt den Grund zurück, sonst None.
+    Ist die Prüfung nicht möglich, wird gepostet wie bisher (der Lauf hat den Stand ohnehin gerade frisch geladen)."""
+    try:
+        subprocess.run(["git", "-C", str(ROOT), "fetch", "--quiet", "--depth=1", "--filter=blob:none",
+                        "origin", "main"], capture_output=True, check=True, timeout=120)
+        daten = subprocess.run(["git", "-C", str(ROOT), "show", "FETCH_HEAD:status/gepostet.json"],
+                               capture_output=True, check=True, timeout=120).stdout
+        aktuell = json.loads(daten.decode("utf-8"))
+    except Exception as e:
+        print("Kontrolle des aktuellen Stands auf GitHub nicht möglich, poste wie geplant:", e)
+        return None
+    if plan.get("termin") and plan["termin"] in aktuell.get("termine_erledigt", []):
+        return f"Termin {plan['termin']} ist auf GitHub schon als erledigt eingetragen"
+    if plan["quelle"] in aktuell.get("gepostet", []):
+        return f"{plan['quelle']} ist auf GitHub schon als gepostet eingetragen"
+    return None
+
+
 def _publish(plan):
     st = load_status()
+    if not plan.get("test"):
+        grund = schon_erledigt_auf_github(plan)
+        if grund:
+            # Nichts posten, nichts eintragen. Facebook und YouTube posten danach ebenfalls nichts,
+            # weil das Reel im Stand dieses Laufs nicht als gepostet eingetragen wird.
+            print("NICHT gepostet:", grund + ". Ein anderer Lauf war schneller.")
+            return
     if "instagram" not in plan.get("plattformen", PLATTFORMEN):
         # Termin ohne Instagram (z. B. plattformen: [facebook]): hier nichts posten, nur als "dran gewesen"
         # eintragen. Facebook bzw. YouTube posten es in den nächsten Schritten desselben Laufs.
