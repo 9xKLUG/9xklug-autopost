@@ -84,7 +84,8 @@
     "reels/wahr oder falsch/9x_KLUG_Reel_WAHR_ODER_FALSCH_schildkröte.mp4",
     "reels/Ohne Lösung/Quadrate zählen/9x_KLUG_BildReel_Quadrate_zaehlen_B1107-1401_02_leicht_A.mp4",
     "reels/Schuettelgeschichte/9x_KLUG_Schuettelgeschichte_Erfinder_Zeitmaschine_gestern_puenktlich.mp4",
-    "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_02_leicht_A.mp4"
+    "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_02_leicht_A.mp4",
+    "reels/Logik/9x_KLUG_Logik_0002_Abziehen.mp4"
   ],
   "termine_erledigt": [
     "2026-10-19_08:00_reel",
@@ -171,7 +172,8 @@
     "2026-11-25_16:30_reel",
     "2026-11-25_21:00_raetsel",
     "2026-11-26_16:30_reel_extra_schuettelgeschichte",
-    "2026-11-26_21:00_raetsel"
+    "2026-11-26_21:00_raetsel",
+    "2026-11-27_16:30_reel_extra_logik"
   ],
   "letzter_reel_typ": "wahr oder falsch",
   "token_erneuert": "2026-11-23",
@@ -789,6 +791,13 @@
       "quelle": "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_02_leicht_A.mp4",
       "test": false,
       "raetsel": true
+    },
+    {
+      "zeit": "2026-11-27T16:45+01:00",
+      "typ": "reel",
+      "art": "Logik",
+      "quelle": "reels/Logik/9x_KLUG_Logik_0002_Abziehen.mp4",
+      "test": false
     }
   ],
   "fehlversuche": {
@@ -942,6 +951,9 @@
       "status": "aus"
     },
     "reels/Ohne Lösung/Streichhölzer/9x_KLUG_BildReel_Streichhoelzer_B1107-1405_02_leicht_A.mp4": {
+      "status": "aus"
+    },
+    "reels/Logik/9x_KLUG_Logik_0002_Abziehen.mp4": {
       "status": "aus"
     }
   },
@@ -1192,6 +1204,12 @@
       "id": "1527267299371976",
       "link": "https://www.facebook.com/reel/1527267299371976/",
       "zeit": "2026-11-26T21:06+01:00"
+    },
+    "reels/Logik/9x_KLUG_Logik_0002_Abziehen.mp4": {
+      "status": "ok",
+      "id": "2637344073444853",
+      "link": "https://www.facebook.com/reel/2637344073444853/",
+      "zeit": "2026-11-27T16:46+01:00"
     }
   },
   "letzte_raetsel_art": "Streichhölzer"
